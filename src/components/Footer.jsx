@@ -39,7 +39,7 @@ const Footer = () => {
             transition={{ duration: 0.5 }}
           >
             <h3 className="text-2xl font-serif font-bold text-primary mb-4">
-              Moniek
+              Manaf Clothing
             </h3>
             <p className="text-gray-300 mb-6 leading-relaxed">
               We are dedicated to creating custom-tailored clothing that perfectly fits your style and personality. Quality craftsmanship meets modern design.
@@ -107,11 +107,11 @@ const Footer = () => {
             <div className="mt-6 space-y-2">
               <div className="flex items-center space-x-2 text-gray-300">
                 <Phone size={18} className="text-primary" />
-                <span>+1 (555) 123-4567</span>
+                <span>+ 233(0) 249-494-505</span>
               </div>
               <div className="flex items-center space-x-2 text-gray-300">
                 <Mail size={18} className="text-primary" />
-                <span>info@moniek.com</span>
+                <span>info@manaf.com</span>
               </div>
             </div>
           </motion.div>
@@ -125,7 +125,7 @@ const Footer = () => {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="border-t border-gray-700 mt-12 pt-8 text-center text-gray-400"
         >
-          <p>&copy; {new Date().getFullYear()} Moniek. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Manaf Clothing. All rights reserved.</p>
         </motion.div>
       </div>
     </footer>

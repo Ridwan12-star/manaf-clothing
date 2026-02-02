@@ -16,22 +16,22 @@ const Gallery = () => {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
-  const categories = ["all", "custom", "alterations", "designs"];
+  const categories = ["all", "suits", "dresses", "alterations", "shirts"];
 
   const galleryItems = [
-    { id: 1, image: img1, category: "custom", title: "Custom Suit Fitting" },
+    { id: 1, image: img1, category: "suits", title: "Custom Suit Fitting" },
     {
       id: 2,
       image: img2,
       category: "alterations",
       title: "Precision Alterations",
     },
-    { id: 3, image: img3, category: "designs", title: "Design Consultation" },
-    { id: 4, image: img4, category: "custom", title: "Tailoring Workshop" },
-    { id: 5, image: img5, category: "designs", title: "Suit Details" },
-    { id: 6, image: img6, category: "custom", title: "Fabric Selection" },
+    { id: 3, image: img3, category: "dresses", title: "Elegant Evening Dress" },
+    { id: 4, image: img4, category: "suits", title: "Tailoring Workshop" },
+    { id: 5, image: img5, category: "suits", title: "Suit Details" },
+    { id: 6, image: img6, category: "shirts", title: "Custom Shirt" },
     { id: 7, image: img1, category: "alterations", title: "Expert Tailoring" },
-    { id: 8, image: img4, category: "designs", title: "Workspace" },
+    { id: 8, image: img4, category: "dresses", title: "Wedding Gown" },
   ];
 
   const filteredItems =
@@ -57,10 +57,10 @@ const Gallery = () => {
           className="text-center mb-12"
         >
           <h2 className="text-4xl lg:text-5xl font-serif font-bold text-black mb-4">
-            Our Gallery
+            Portfolio Gallery
           </h2>
           <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-            Explore our portfolio of exceptional tailoring work
+            Browse through our collection of beautifully crafted garments and see the quality of our work
           </p>
         </motion.div>
 

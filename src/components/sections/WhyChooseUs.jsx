@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Scissors, Sparkles, Ruler, Award } from 'lucide-react';
+import { Scissors, Ruler, Zap, Sparkles } from 'lucide-react';
 
 const WhyChooseUs = () => {
   const features = [
@@ -9,19 +9,19 @@ const WhyChooseUs = () => {
       description: 'Our master tailors have decades of experience creating perfect garments with meticulous attention to detail.',
     },
     {
-      icon: Sparkles,
-      title: 'Premium Materials',
-      description: 'We source only the finest fabrics from around the world to ensure quality and durability.',
-    },
-    {
       icon: Ruler,
       title: 'Perfect Fit Guarantee',
       description: 'Every garment is tailored to your exact measurements for a flawless, comfortable fit.',
     },
     {
-      icon: Award,
-      title: 'Personalized Service',
-      description: 'From consultation to final fitting, we provide dedicated one-on-one attention to every client.',
+      icon: Zap,
+      title: 'Professional Sewing',
+      description: 'Using state-of-the-art equipment and traditional techniques to create beautiful, durable pieces.',
+    },
+    {
+      icon: Sparkles,
+      title: 'Quality Materials',
+      description: 'We source only the finest fabrics and threads to ensure your garments last for years to come.',
     },
   ];
 

@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import aboutImage from "../../assets/about_workspace_1769960172951.png";
+import aboutImage from "../../assets/manafff.jpeg";
 
 const About = () => {
   return (
@@ -20,7 +20,7 @@ const About = () => {
                 transition={{ duration: 0.3 }}
                 src={aboutImage}
                 alt="Moniek workspace"
-                className="rounded-lg shadow-2xl w-full h-[500px] object-cover relative z-10"
+                className="rounded-lg shadow-2xl w-full h-[500px] object-cover object-top relative z-10"
               />
               {/* Decorative element */}
               <div className="hidden lg:block absolute -bottom-6 -right-6 w-full h-full bg-primary/20 rounded-lg -z-0" />
@@ -35,7 +35,7 @@ const About = () => {
             transition={{ duration: 0.8 }}
             className="order-1 lg:order-2"
           >
-            <div className="bg-secondary lg:bg-secondary p-8 lg:p-12 rounded-lg lg:-ml-12 relative z-20">
+            <div className="bg-white lg:bg-secondary p-8 lg:p-12 rounded-lg lg:-ml-12 relative z-20">
               <motion.h2
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -43,7 +43,7 @@ const About = () => {
                 transition={{ duration: 0.6, delay: 0.2 }}
                 className="text-4xl lg:text-5xl font-serif font-bold text-black mb-6"
               >
-                About Manaf Clothing
+                About Moniek Clothing
               </motion.h2>
 
               <motion.div

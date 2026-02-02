@@ -18,6 +18,7 @@ const Header = () => {
     { name: "Home", href: "#home" },
     { name: "About", href: "#about" },
     { name: "Services", href: "#services" },
+    { name: "Our Work", href: "#our-work" },
     { name: "Contact", href: "#contact" },
   ];
 
@@ -48,7 +49,7 @@ const Header = () => {
             className="text-2xl lg:text-3xl font-serif font-bold text-primary"
             whileHover={{ scale: 1.05 }}
           >
-            Manaf Clothing
+            Moniek
           </motion.a>
 
           {/* Desktop Navigation */}

@@ -36,7 +36,7 @@ const Preloader = ({ onLoadingComplete }) => {
         transition={{ duration: 1.5, repeat: Infinity }}
         className="absolute mt-32 text-primary font-serif text-lg tracking-wider"
       >
-        Manaf Clothing
+        Moniek
       </motion.p>
     </motion.div>
   );

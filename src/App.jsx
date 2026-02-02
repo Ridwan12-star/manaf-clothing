@@ -6,6 +6,7 @@ import ServicesPreview from "./components/sections/ServicesPreview";
 import About from "./components/sections/About";
 import WhyChooseUs from "./components/sections/WhyChooseUs";
 import Gallery from "./components/sections/Gallery";
+import OurWork from "./components/sections/OurWork";
 import Testimonials from "./components/sections/Testimonials";
 import SocialMedia from "./components/sections/SocialMedia";
 import Contact from "./components/sections/Contact";
@@ -32,6 +33,7 @@ function App() {
           <ServicesPreview />
           <About />
           <WhyChooseUs />
+          <OurWork />
           <Gallery />
           <Testimonials />
           <SocialMedia />

@@ -12,6 +12,7 @@ const Footer = () => {
     { name: 'Home', href: '#home' },
     { name: 'About', href: '#about' },
     { name: 'Services', href: '#services' },
+    { name: 'Our Work', href: '#our-work' },
     { name: 'Contact', href: '#contact' },
   ];
 
@@ -99,12 +100,8 @@ const Footer = () => {
                 <span className="font-semibold">9:00 AM - 6:00 PM</span>
               </li>
               <li className="flex justify-between">
-                <span>Saturday:</span>
-                <span className="font-semibold">10:00 AM - 4:00 PM</span>
-              </li>
-              <li className="flex justify-between">
                 <span>Sunday:</span>
-                <span className="font-semibold">Closed</span>
+                <span className="font-semibold">10:00 AM - 4:00 PM</span>
               </li>
             </ul>
             <div className="mt-6 space-y-2">

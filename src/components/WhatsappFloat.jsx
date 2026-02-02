@@ -7,7 +7,7 @@ function WhatsAppFloat() {
 
   return (
     <a
-      href="https://wa.me/233541419906"
+      href="https://wa.me/233249494505"
       target="_blank"
       rel="noopener noreferrer"
       className="fixed bottom-6 right-6 z-1000 flex items-center"

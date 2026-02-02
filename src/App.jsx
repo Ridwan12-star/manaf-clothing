@@ -31,11 +31,12 @@ function App() {
         <main>
           <Hero />
           <ServicesPreview />
+          <OurWork />
           <About />
           <WhyChooseUs />
-          <OurWork />
+          
           <Gallery />
-          <Testimonials />
+          
           <SocialMedia />
           <Contact />
         </main>

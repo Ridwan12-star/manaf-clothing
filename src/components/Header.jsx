@@ -49,7 +49,7 @@ const Header = () => {
             className="text-2xl lg:text-3xl font-serif font-bold text-primary"
             whileHover={{ scale: 1.05 }}
           >
-            Moniek
+            Manaf Clothing
           </motion.a>
 
           {/* Desktop Navigation */}

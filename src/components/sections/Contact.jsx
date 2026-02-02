@@ -38,9 +38,9 @@ const Contact = () => {
                   Our Location
                 </h3>
                 <p className="text-gray-600">
-                  123 Fashion Avenue<br />
-                  New York, NY 10001<br />
-                  United States
+                  Koforidua<br />
+                  Eastern Region<br />
+                  Ghana
                 </p>
               </div>
             </div>
@@ -54,8 +54,8 @@ const Contact = () => {
                   Phone
                 </h3>
                 <p className="text-gray-600">
-                  +1 (555) 123-4567<br />
-                  +1 (555) 987-6543
+                  +233 (0) 249-494-505<br />
+                  +233 (0) 249-494-505
                 </p>
               </div>
             </div>
@@ -69,7 +69,7 @@ const Contact = () => {
                   Email
                 </h3>
                 <p className="text-gray-600">
-                  info@moniek.com<br />
+                  info@manafclothing.com<br />
                   appointments@moniek.com
                 </p>
               </div>

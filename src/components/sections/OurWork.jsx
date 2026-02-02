@@ -9,12 +9,12 @@ import { Plus, Image as ImageIcon } from "lucide-react";
 // 1. Place images in src/assets/ folder
 // 2. Import them at the top (e.g., import newImage from "../../assets/your-image.jpg")
 // 3. Add them to the images array in the workCategories below
-import img1 from "../../assets/imgone.png";
-import img2 from "../../assets/service_alterations_1769960137293.png";
-import img3 from "../../assets/imgtwo.png";
-import img4 from "../../assets/about_workspace_1769960172951.png";
-import img5 from "../../assets/gallery_suit_detail_1769960193088.png";
-import img6 from "../../assets/hero_tailor_measuring_1769960105944.png";
+import img1 from "../../assets/customized suits.jpg";
+import img2 from "../../assets/1.jpg";
+import img3 from "../../assets/2.jpg";
+import img4 from "../../assets/3.jpg";
+import img5 from "../../assets/4.jpg";
+import img6 from "../../assets/5.jpg";
 
 const OurWork = () => {
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -62,7 +62,7 @@ const OurWork = () => {
       name: "Custom Shirts",
       description: "Perfectly fitted shirts for work and casual wear",
       images: [
-        { id: 1, src: img4, title: "Business Shirt" },
+        { id: 1, src: img3, title: "Business Shirt" },
         { id: 2, src: img5, title: "Casual Shirt" },
         { id: 3, src: img6, title: "Formal Shirt" },
       ],

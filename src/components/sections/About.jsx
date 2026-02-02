@@ -43,7 +43,7 @@ const About = () => {
                 transition={{ duration: 0.6, delay: 0.2 }}
                 className="text-4xl lg:text-5xl font-serif font-bold text-black mb-6"
               >
-                About Moniek Clothing
+                About Manaf Clothing
               </motion.h2>
 
               <motion.div
@@ -54,7 +54,7 @@ const About = () => {
                 className="space-y-4 text-gray-700 leading-relaxed"
               >
                 <p>
-                  For over two decades, Moniek has been at the forefront of
+                  For over a decade, Manaf has been at the forefront of
                   bespoke tailoring, combining traditional craftsmanship with
                   contemporary design sensibilities.
                 </p>

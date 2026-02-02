@@ -19,7 +19,7 @@ const Hero = () => {
         <img
           src={heroImage}
           alt="Tailor measuring fabric"
-          className="w-full h-full object-cover opacity-30"
+          className="w-full h-full object-cover opacity-90 "
         />
         <div className="absolute inset-0 bg-gradient-to-r from-gray-900/90 to-gray-900/70" />
       </div>

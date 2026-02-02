@@ -12,19 +12,19 @@ const Testimonials = () => {
     {
       id: 1,
       name: 'Sarah Johnson',
-      quote: 'Moniek transformed my wedding dress into something beyond my wildest dreams. The attention to detail and craftsmanship is unparalleled. I felt like royalty!',
+      quote: 'Manaf Clothing transformed my wedding dress into something beyond my wildest dreams. The attention to detail and craftsmanship is unparalleled. I felt like royalty!',
       image: 'https://ui-avatars.com/api/?name=Sarah+Johnson&background=9c7d6d&color=fff&size=200',
     },
     {
       id: 2,
       name: 'Michael Chen',
-      quote: 'I\'ve been getting my suits tailored at Moniek for years. The perfect fit and quality fabrics make all the difference. Highly recommend their custom tailoring service!',
+      quote: 'I\'ve been getting my suits tailored at Manaf for years. The perfect fit and quality fabrics make all the difference. Highly recommend their custom tailoring service!',
       image: 'https://ui-avatars.com/api/?name=Michael+Chen&background=9c7d6d&color=fff&size=200',
     },
     {
       id: 3,
       name: 'Emily Rodriguez',
-      quote: 'The team at Moniek is incredibly professional and talented. They took the time to understand my style and created pieces that fit perfectly. Worth every penny!',
+      quote: 'The team at Manaf is incredibly professional and talented. They took the time to understand my style and created pieces that fit perfectly. Worth every penny!',
       image: 'https://ui-avatars.com/api/?name=Emily+Rodriguez&background=9c7d6d&color=fff&size=200',
     },
   ];

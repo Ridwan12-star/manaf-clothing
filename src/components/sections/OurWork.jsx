@@ -39,8 +39,8 @@ const OurWork = () => {
     },
     {
       id: "dresses",
-      name: "Dresses & Gowns",
-      description: "Beautiful dresses for every occasion",
+      name: "Dresses ",
+      description: "Nice dresses for every occasion",
       images: [
         { id: 1, src: img2, title: "Elegant Evening Dress" },
         { id: 2, src: img4, title: "Wedding Gown" },

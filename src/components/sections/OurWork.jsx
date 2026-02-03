@@ -88,7 +88,7 @@ const OurWork = () => {
           <p className="text-gray-600 text-lg max-w-2xl mx-auto italic">Quality craftsmanship meets modern African elegance.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
           {isLoading ? (
             <div className="col-span-full py-20 flex justify-center"><Loader2 className="animate-spin text-primary" size={40} /></div>
           ) : (
@@ -100,44 +100,44 @@ const OurWork = () => {
                 transition={{ duration: 0.5, delay: categoryIndex * 0.1 }}
                 className="group"
               >
-                <div className="bg-white rounded-[2rem] shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden border border-gray-100 hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] transition-all h-full flex flex-col">
+                <div className="bg-white rounded-xl md:rounded-2xl shadow-[0_4px_20px_-8px_rgba(0,0,0,0.1)] overflow-hidden border border-gray-100 hover:shadow-[0_8px_30px_-10px_rgba(0,0,0,0.15)] transition-all h-full flex flex-col">
                   {/* Image Stack Preview */}
-                  <div className="relative aspect-[4/5] overflow-hidden cursor-pointer" onClick={() => window.location.hash = `#category/${category.slug}`}>
+                  <div className="relative aspect-[3/4] overflow-hidden cursor-pointer" onClick={() => window.location.hash = `#category/${category.slug}`}>
                     {category.images.length > 0 ? (
                       <img src={category.images[0].src} alt={category.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                     ) : (
-                      <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-300"><ImageIcon size={48} /></div>
+                      <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-300"><ImageIcon size={32} /></div>
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-8">
-                      <div>
-                        <span className="bg-primary px-3 py-1 rounded-full text-[10px] font-black text-white uppercase tracking-widest mb-3 inline-block">Collection</span>
-                        <h3 className="text-3xl font-serif font-bold text-white leading-tight">{category.name}</h3>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex items-end p-4 md:p-6">
+                      <div className="w-full">
+                        <span className="bg-primary px-2 py-0.5 rounded-full text-[8px] md:text-[10px] font-black text-white uppercase tracking-widest mb-2 inline-block">Collection</span>
+                        <h3 className="text-base md:text-xl lg:text-2xl font-serif font-bold text-white leading-tight line-clamp-2">{category.name}</h3>
                       </div>
                     </div>
                   </div>
 
-                  <div className="p-8 flex-1 flex flex-col justify-between">
-                    <p className="text-gray-500 text-sm mb-6 leading-relaxed italic">{category.description || `Explore our latest ${category.name} designs.`}</p>
+                  <div className="p-4 md:p-6 flex-1 flex flex-col justify-between">
+                    <p className="text-gray-500 text-xs md:text-sm mb-4 leading-relaxed italic line-clamp-2">{category.description || `Explore our latest ${category.name} designs.`}</p>
 
-                    <div className="flex items-center justify-between gap-4 pt-4 border-t border-gray-50">
-                      <div className="flex -space-x-3">
+                    <div className="flex items-center justify-between gap-2 md:gap-4 pt-3 md:pt-4 border-t border-gray-50">
+                      <div className="flex -space-x-2 md:-space-x-3">
                         {category.images.slice(0, 3).map((img, idx) => (
-                          <div key={idx} className="w-10 h-10 rounded-full border-2 border-white overflow-hidden shadow-sm">
+                          <div key={idx} className="w-6 h-6 md:w-8 md:h-8 rounded-full border-2 border-white overflow-hidden shadow-sm">
                             <img src={img.src} alt="" className="w-full h-full object-cover" />
                           </div>
                         ))}
                         {category.images.length > 3 && (
-                          <div className="w-10 h-10 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center text-[10px] font-bold text-gray-500 shadow-sm">
+                          <div className="w-6 h-6 md:w-8 md:h-8 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center text-[8px] md:text-[10px] font-bold text-gray-500 shadow-sm">
                             +{category.images.length - 3}
                           </div>
                         )}
-                        {category.images.length === 0 && <span className="text-xs text-gray-400 font-bold">New Collection</span>}
+                        {category.images.length === 0 && <span className="text-[10px] md:text-xs text-gray-400 font-bold">New</span>}
                       </div>
                       <button
                         onClick={() => window.location.hash = `#category/${category.slug}`}
-                        className="text-primary font-black uppercase text-xs tracking-widest flex items-center gap-2 hover:gap-3 transition-all underline underline-offset-8"
+                        className="text-primary font-black uppercase text-[9px] md:text-xs tracking-widest flex items-center gap-1 md:gap-2 hover:gap-2 md:hover:gap-3 transition-all"
                       >
-                        View Collection <Plus size={14} />
+                        View <Plus size={10} className="md:w-3 md:h-3" />
                       </button>
                     </div>
                   </div>

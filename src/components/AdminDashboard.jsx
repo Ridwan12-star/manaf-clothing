@@ -8,7 +8,7 @@ import {
 import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from "firebase/auth";
 import {
   Image as ImageIcon, Search, Inbox, CheckCircle2,
-  Loader2, LogOut, Lock, Settings, Plus, Trash2, Edit2, Clock, MapPin, Palette, FileText, AlertCircle, Menu, X, ChevronRight
+  Loader2, LogOut, Lock, Settings, Plus, Trash2, Edit2, Clock, MapPin, Palette, FileText, AlertCircle, Menu, X, ChevronRight, Globe
 } from "lucide-react";
 
 const AdminDashboard = () => {
@@ -334,10 +334,10 @@ const AdminDashboard = () => {
         <AnimatePresence mode="wait">
           {activeTab === "upload" && (
             <motion.div key="upload" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="max-w-2xl mx-auto">
-              <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 p-10">
-                <h3 className="text-2xl font-serif font-black text-black mb-8 uppercase tracking-tight">Upload Style</h3>
-                <form onSubmit={handleActualUpload} className="space-y-6">
-                  <div className="p-10 border-4 border-dashed rounded-[2rem] bg-gray-50/50 text-center hover:bg-gray-100 transition-all cursor-pointer relative overflow-hidden group">
+              <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 p-6 md:p-8">
+                <h3 className="text-xl md:text-2xl font-serif font-black text-black mb-6 uppercase tracking-tight">Upload Style</h3>
+                <form onSubmit={handleActualUpload} className="space-y-5">
+                  <div className="border-2 border-dashed rounded-2xl bg-gray-50/50 text-center hover:bg-gray-100 transition-all cursor-pointer relative overflow-hidden group">
                     <input type="file" accept="image/*" onChange={(e) => {
                       const file = e.target.files[0];
                       if (file) {
@@ -346,30 +346,54 @@ const AdminDashboard = () => {
                       }
                     }} className="absolute inset-0 opacity-0 cursor-pointer z-10" />
                     {uploadPreview ? (
-                      <img src={uploadPreview} className="w-full h-80 object-cover rounded-2xl shadow-lg border-2 border-white" />
+                      <div className="p-4">
+                        <img src={uploadPreview} className="w-full max-h-64 md:max-h-80 object-cover rounded-xl shadow-md" alt="Preview" />
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setUploadPreview(null);
+                            setSelectedFile(null);
+                          }}
+                          className="mt-3 text-xs text-red-500 font-bold hover:text-red-700"
+                        >
+                          Remove Image
+                        </button>
+                      </div>
                     ) : (
-                      <div className="py-14">
-                        <Plus className="mx-auto text-gray-300 mb-4" size={48} />
+                      <div className="p-8 md:p-12">
+                        <Plus className="mx-auto text-gray-300 mb-3" size={36} />
                         <p className="text-gray-400 font-black uppercase tracking-widest text-[10px]">Tap to upload photo</p>
+                        <p className="text-gray-300 text-[9px] mt-1">JPG, PNG up to 10MB</p>
                       </div>
                     )}
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-[10px] font-black text-gray-300 uppercase tracking-widest ml-1">Title</label>
-                      <input type="text" placeholder="Title" value={uploadTitle} onChange={e => setUploadTitle(e.target.value)} className="w-full p-4 bg-gray-50 border-0 rounded-2xl font-bold placeholder:text-gray-200" />
+                      <input type="text" placeholder="Enter title" value={uploadTitle} onChange={e => setUploadTitle(e.target.value)} className="w-full p-3 md:p-4 bg-gray-50 border-0 rounded-xl font-bold placeholder:text-gray-200 text-sm" />
                     </div>
                     <div className="space-y-2">
                       <label className="text-[10px] font-black text-gray-300 uppercase tracking-widest ml-1">Collection</label>
-                      <select value={uploadCategory} onChange={e => setUploadCategory(e.target.value)} className="w-full p-4 bg-gray-50 border-0 rounded-2xl font-bold bg-white text-black">
-                        {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                      <select value={uploadCategory} onChange={e => setUploadCategory(e.target.value)} className="w-full p-3 md:p-4 bg-gray-50 border-0 rounded-xl font-bold bg-white text-black text-sm">
+                        {isLoadingCategories ? (
+                          <option>Loading...</option>
+                        ) : categories.length > 0 ? (
+                          categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)
+                        ) : (
+                          <option>No categories available</option>
+                        )}
                       </select>
                     </div>
                   </div>
-                  <button type="submit" disabled={isUploading} className="w-full py-5 bg-black text-white rounded-2xl font-black uppercase tracking-[0.2em] shadow-xl text-xs">
+                  <button type="submit" disabled={isUploading || !selectedFile || !uploadTitle || !uploadCategory} className="w-full py-4 md:py-5 bg-black text-white rounded-xl md:rounded-2xl font-black uppercase tracking-[0.2em] shadow-xl text-xs disabled:opacity-50 disabled:cursor-not-allowed transition-all">
                     {isUploading ? "Uploading..." : "Publish To Site"}
                   </button>
-                  {uploadMessage && <p className="text-center text-primary font-black uppercase text-[10px] tracking-[0.2em] mt-2">{uploadMessage}</p>}
+                  {uploadMessage && (
+                    <p className={`text-center font-black uppercase text-[10px] tracking-[0.2em] mt-2 ${uploadMessage.includes("Error") || uploadMessage.includes("incomplete") ? "text-red-500" : "text-primary"}`}>
+                      {uploadMessage}
+                    </p>
+                  )}
                 </form>
               </div>
             </motion.div>

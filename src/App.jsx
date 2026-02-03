@@ -17,16 +17,32 @@ import CategoryGallery from "./components/CategoryGallery";
 
 function App() {
   const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(
-    window.location.hash === "#admin" || window.location.pathname === "/admin"
-  );
+  const [isAdmin, setIsAdmin] = useState(() => {
+    const savedAdmin = localStorage.getItem("is_admin_mode") === "true";
+    return savedAdmin || window.location.hash === "#admin" || window.location.pathname === "/admin";
+  });
   const [selectedCategory, setSelectedCategory] = useState(
     window.location.hash.startsWith("#category/") ? window.location.hash.split("/")[1] : null
   );
 
   useEffect(() => {
     const handleHashChange = () => {
-      setIsAdmin(window.location.hash === "#admin" || window.location.pathname === "/admin");
+      const isCurrentlyAdmin = window.location.hash === "#admin" || window.location.pathname === "/admin";
+
+      if (isCurrentlyAdmin) {
+        setIsAdmin(true);
+        localStorage.setItem("is_admin_mode", "true");
+      } else if (window.location.hash === "#exit-admin") {
+        setIsAdmin(false);
+        localStorage.removeItem("is_admin_mode");
+        window.location.hash = ""; // Clear hash after exit
+      } else {
+        // Only override isAdmin if we are navigation completely away (like to a category)
+        if (window.location.hash.startsWith("#category/")) {
+          setIsAdmin(false);
+          localStorage.removeItem("is_admin_mode");
+        }
+      }
 
       if (window.location.hash.startsWith("#category/")) {
         setSelectedCategory(window.location.hash.split("/")[1]);

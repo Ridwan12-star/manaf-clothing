@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Create PWA Icons</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    canvas {
+      border: 2px solid #ddd;
+      margin: 10px 0;
+      display: block;
+    }
+    button {
+      background: #8B6F47;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover {
+      background: #5C4A37;
+    }
+    .instructions {
+      background: #f0f0f0;
+      padding: 15px;
+      border-radius: 5px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Create PWA Icons for Manaf Clothing</h1>
+    <p>This will create icon-192.png and icon-512.png in your public folder.</p>
+    
+    <canvas id="icon192" width="192" height="192"></canvas>
+    <button onclick="downloadIcon(192)">Download icon-192.png</button>
+    
+    <canvas id="icon512" width="512" height="512"></canvas>
+    <button onclick="downloadIcon(512)">Download icon-512.png</button>
+    
+    <div class="instructions">
+      <h3>Instructions:</h3>
+      <ol>
+        <li>Click "Download icon-192.png" and save it to <code>public/icon-192.png</code></li>
+        <li>Click "Download icon-512.png" and save it to <code>public/icon-512.png</code></li>
+        <li>Or manually create icons using your logo image</li>
+      </ol>
+    </div>
+  </div>
+
+  <script>
+    function createIcon(size) {
+      const canvas = document.getElementById(`icon${size}`);
+      const ctx = canvas.getContext('2d');
+      
+      // Background color matching your theme
+      ctx.fillStyle = '#8B6F47';
+      ctx.fillRect(0, 0, size, size);
+      
+      // Add text
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `bold ${size * 0.15}px Arial`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('MC', size / 2, size / 2);
+      
+      // Add border
+      ctx.strokeStyle = '#5C4A37';
+      ctx.lineWidth = size * 0.02;
+      ctx.strokeRect(0, 0, size, size);
+      
+      return canvas;
+    }
+    
+    function downloadIcon(size) {
+      const canvas = createIcon(size);
+      const link = document.createElement('a');
+      link.download = `icon-${size}.png`;
+      link.href = canvas.toDataURL();
+      link.click();
+    }
+    
+    // Draw icons on page load
+    window.onload = () => {
+      createIcon(192);
+      createIcon(512);
+    };
+  </script>
+</body>
+</html>

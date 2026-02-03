@@ -29,7 +29,7 @@ const Footer = () => {
     <footer className="relative bg-gray-900 text-white overflow-hidden">
       {/* Background overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-900/50 to-gray-900/90 z-0" />
-      
+
       <div className="relative z-10 container mx-auto px-4 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-6xl mx-auto">
           {/* Column 1: About */}
@@ -41,9 +41,9 @@ const Footer = () => {
             className="text-center md:text-left"
           >
             <div className="flex flex-col items-center md:items-start mb-4">
-              <img 
-                src={logo} 
-                alt="Manaf Clothing Logo" 
+              <img
+                src={logo}
+                alt="Manaf Clothing Logo"
                 className="h-16 w-auto object-contain mb-4"
               />
               <h3 className="text-2xl font-serif font-bold text-primary">
@@ -150,7 +150,20 @@ const Footer = () => {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="border-t border-gray-700 mt-12 pt-8 text-center text-gray-400"
         >
-          <p>&copy; {new Date().getFullYear()} Manaf Clothing. All rights reserved.</p>
+          <p>
+            <button
+              id="admin-secret-trigger"
+              onClick={() => {
+                window.location.hash = "#admin";
+                window.location.reload();
+              }}
+              className="hover:text-primary transition-colors cursor-default inline-block py-2 px-4 -ml-4"
+              aria-label="Admin Portal"
+            >
+              &copy;
+            </button>{" "}
+            {new Date().getFullYear()} Manaf Clothing. All rights reserved.
+          </p>
         </motion.div>
       </div>
     </footer>

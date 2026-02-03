@@ -37,9 +37,8 @@ const Header = () => {
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.5 }}
-      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
-        scrolled ? "bg-white shadow-md" : "bg-white"
-      }`}
+      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${scrolled ? "bg-white shadow-md" : "bg-white"
+        }`}
     >
       <nav className="container mx-auto px-4 lg:px-8 py-4">
         <div className="flex items-center justify-between">
@@ -50,12 +49,25 @@ const Header = () => {
             className="flex items-center gap-3"
             whileHover={{ scale: 1.05 }}
           >
-            <img 
-              src={logo} 
-              alt="Manaf Clothing Logo" 
+            <img
+              src={logo}
+              alt="Manaf Clothing Logo"
               className="h-10 lg:h-12 w-auto object-contain"
             />
-            <span className="text-xl lg:text-2xl font-serif font-bold text-primary hidden sm:block">
+            <span
+              className="text-xl lg:text-2xl font-serif font-bold text-primary hidden sm:block cursor-default"
+              onDoubleClick={() => {
+                window.location.hash = "#admin";
+                window.location.reload();
+              }}
+              onClick={(e) => {
+                // Secret: 3 taps to enter admin via logo text
+                if (e.detail === 3) {
+                  window.location.hash = "#admin";
+                  window.location.reload();
+                }
+              }}
+            >
               Manaf Clothing
             </span>
           </motion.a>

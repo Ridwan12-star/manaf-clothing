@@ -9,31 +9,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['logo.jpeg', 'vite.svg'],
-      manifest: {
-        name: 'Manaf Clothing - Professional Tailoring',
-        short_name: 'Manaf Clothing',
-        description: 'Professional tailoring services offering custom clothing, alterations, and design consultations',
-        theme_color: '#8B6F47',
-        background_color: '#ffffff',
-        display: 'standalone',
-        orientation: 'portrait',
-        start_url: '/',
-        scope: '/',
-        icons: [
-          {
-            src: '/icon-192.png',
-            sizes: '192x192',
-            type: 'image/png',
-            purpose: 'any maskable'
-          },
-          {
-            src: '/icon-512.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'any maskable'
-          }
-        ]
-      },
+      manifest: false, // We use the manual public/manifest.json
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg}'],
         runtimeCaching: [

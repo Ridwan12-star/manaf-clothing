@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
+import { ShoppingCart } from "lucide-react";
 
 // Import existing images
 import img1 from "../../assets/imgone.png";
@@ -44,6 +45,32 @@ const Gallery = () => {
   const openLightbox = (index) => {
     setLightboxIndex(index);
     setLightboxOpen(true);
+  };
+
+  const addToCart = (e, item) => {
+    e.stopPropagation();
+    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+    const cartItem = {
+      id: `gallery-${item.id}`,
+      title: item.title,
+      image: item.image,
+      category: item.category,
+    };
+    
+    // Check if item already exists
+    if (!cart.find((i) => i.id === cartItem.id)) {
+      cart.push(cartItem);
+      localStorage.setItem("cart", JSON.stringify(cart));
+      window.dispatchEvent(new Event("cart-updated"));
+      
+      // Show feedback
+      const button = e.currentTarget;
+      const originalHTML = button.innerHTML;
+      button.innerHTML = '<span class="text-green-500">✓ Added</span>';
+      setTimeout(() => {
+        button.innerHTML = originalHTML;
+      }, 2000);
+    }
   };
 
   return (
@@ -117,11 +144,20 @@ const Gallery = () => {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-                  {/* Title on hover */}
+                  {/* Title and Add to Cart on hover */}
                   <div className="absolute bottom-0 left-0 right-0 p-4 text-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                    <h3 className="text-lg font-serif font-bold">
+                    <h3 className="text-lg font-serif font-bold mb-2">
                       {item.title}
                     </h3>
+                    <motion.button
+                      onClick={(e) => addToCart(e, item)}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary/90 transition-colors"
+                    >
+                      <ShoppingCart size={18} />
+                      Add to Cart
+                    </motion.button>
                   </div>
                 </div>
               </motion.div>

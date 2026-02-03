@@ -1,14 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
-import { Plus, Image as ImageIcon } from "lucide-react";
+import { Plus, Image as ImageIcon, ShoppingCart, Loader2 } from "lucide-react";
+import { db } from "../../firebase";
+import { collection, query, orderBy, getDocs } from "firebase/firestore";
 
-// Import existing images - you can replace these with your boss's work
-// To add new images: 
-// 1. Place images in src/assets/ folder
-// 2. Import them at the top (e.g., import newImage from "../../assets/your-image.jpg")
-// 3. Add them to the images array in the workCategories below
+// Fallback images if needed
 import img1 from "../../assets/customized suits.jpg";
 import img2 from "../../assets/1.jpg";
 import img3 from "../../assets/2.jpg";
@@ -19,208 +17,140 @@ import img6 from "../../assets/5.jpg";
 const OurWork = () => {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [portfolioItems, setPortfolioItems] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [lightboxSlides, setLightboxSlides] = useState([]);
 
-  // Work categories - Easy to add more categories and images later
-  // To add a new category: Copy one of the category objects below and update:
-  // - id: unique identifier (lowercase, no spaces)
-  // - name: Display name for the category
-  // - description: Brief description
-  // - images: Array of image objects with id, src (imported image), and title
-  const workCategories = [
-    {
-      id: "suits",
-      name: "Custom Suits",
-      description: "Handcrafted suits tailored to perfection",
-      images: [
-        { id: 1, src: img1, title: "Classic Navy Suit" },
-        { id: 2, src: img5, title: "Elegant Black Suit" },
-        { id: 3, src: img3, title: "Formal Evening Suit" },
-      ],
-    },
-    {
-      id: "dresses",
-      name: "Dresses ",
-      description: "Nice dresses for every occasion",
-      images: [
-        { id: 1, src: img2, title: "Elegant Evening Dress" },
-        { id: 2, src: img4, title: "Wedding Gown" },
-        { id: 3, src: img6, title: "Cocktail Dress" },
-      ],
-    },
-    {
-      id: "alterations",
-      name: "Alterations & Repairs",
-      description: "Expert alterations to make your clothes fit perfectly",
-      images: [
-        { id: 1, src: img2, title: "Hem Alteration" },
-        { id: 2, src: img1, title: "Sleeve Adjustment" },
-        { id: 3, src: img3, title: "Waist Fitting" },
-      ],
-    },
-    {
-      id: "shirts",
-      name: "Custom Shirts",
-      description: "Perfectly fitted shirts for work and casual wear",
-      images: [
-        { id: 1, src: img3, title: "Business Shirt" },
-        { id: 2, src: img5, title: "Casual Shirt" },
-        { id: 3, src: img6, title: "Formal Shirt" },
-      ],
-    },
-    {
-      id: "jackets",
-      name: "Jackets & Blazers",
-      description: "Stylish jackets tailored to your measurements",
-      images: [
-        { id: 1, src: img1, title: "Classic Blazer" },
-        { id: 2, src: img3, title: "Leather Jacket" },
-        { id: 3, src: img5, title: "Formal Jacket" },
-      ],
-    },
-    {
-      id: "accessories",
-      name: "Accessories & Details",
-      description: "Custom accessories and finishing touches",
-      images: [
-        { id: 1, src: img2, title: "Custom Cufflinks" },
-        { id: 2, src: img4, title: "Belt Alteration" },
-        { id: 3, src: img6, title: "Button Details" },
-      ],
-    },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // 1. Fetch Categories
+        const catQuery = query(collection(db, "categories"), orderBy("createdAt", "desc"));
+        const catSnap = await getDocs(catQuery);
+        const fetchedCats = catSnap.docs.map(doc => ({
+          id: doc.id,
+          slug: doc.data().name.toLowerCase().replace(/\s+/g, '-'),
+          ...doc.data(),
+          images: []
+        }));
 
-  const openLightbox = (categoryIndex, imageIndex) => {
-    const category = workCategories[categoryIndex];
-    const allImages = workCategories.flatMap((cat) =>
-      cat.images.map((img) => ({ src: img.src, title: img.title }))
-    );
-    const startIndex = workCategories
-      .slice(0, categoryIndex)
-      .reduce((sum, cat) => sum + cat.images.length, 0);
-    setLightboxIndex(startIndex + imageIndex);
-    setLightboxOpen(true);
+        // 2. Fetch Portfolio Items
+        const q = query(collection(db, "portfolio"), orderBy("createdAt", "desc"));
+        const querySnapshot = await getDocs(q);
+        const items = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+
+        setPortfolioItems(items);
+        setCategories(fetchedCats);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const getMergedCategories = () => {
+    const merged = [...categories];
+
+    portfolioItems.forEach(item => {
+      const slug = item.category.toLowerCase().replace(/\s+/g, '-');
+      let category = merged.find(c => c.slug === slug);
+
+      // Only add to existing categories created by the admin
+      if (category) {
+        if (!category.images.find(img => img.firebaseId === item.id)) {
+          category.images.unshift({
+            id: `fb-${item.id}`,
+            firebaseId: item.id,
+            src: item.imageUrl,
+            title: item.title,
+            description: item.description
+          });
+        }
+      }
+    });
+
+    return merged;
   };
+
+  const displayCategories = getMergedCategories();
 
   return (
     <section id="our-work" className="py-20 bg-white">
       <div className="container mx-auto px-4 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
-          <h2 className="text-4xl lg:text-5xl font-serif font-bold text-black mb-4">
-            Our Work
-          </h2>
-          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-            Explore the beautiful pieces we've created. Each item is carefully
-            crafted with attention to detail and precision.
-          </p>
-        </motion.div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {workCategories.map((category, categoryIndex) => (
-            <motion.div
-              key={category.id}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: categoryIndex * 0.1 }}
-              className="group"
-            >
-              <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 border border-gray-100">
-                {/* Category Header */}
-                <div className="bg-gradient-to-r from-primary/10 to-secondary/10 p-6 border-b border-gray-100">
-                  <h3 className="text-2xl font-serif font-bold text-black mb-2">
-                    {category.name}
-                  </h3>
-                  <p className="text-gray-600 text-sm">{category.description}</p>
-                </div>
-
-                {/* Image Grid */}
-                <div className="p-4">
-                  <div className="grid grid-cols-3 gap-2">
-                    {category.images.map((image, imageIndex) => (
-                      <motion.div
-                        key={image.id}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => openLightbox(categoryIndex, imageIndex)}
-                        className="relative aspect-square overflow-hidden rounded-lg cursor-pointer group/item"
-                      >
-                        <img
-                          src={image.src}
-                          alt={image.title}
-                          className="w-full h-full object-cover"
-                        />
-                        <div className="absolute inset-0 bg-black/0 group-hover/item:bg-black/30 transition-all duration-300 flex items-center justify-center">
-                          <ImageIcon
-                            className="text-white opacity-0 group-hover/item:opacity-100 transition-opacity duration-300"
-                            size={24}
-                          />
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-
-                  {/* View All Button */}
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="mt-4 w-full py-3 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg transition-all duration-300 flex items-center justify-center gap-2 font-semibold"
-                  >
-                    <span>View All {category.name}</span>
-                  </motion.button>
-                </div>
-              </div>
-            </motion.div>
-          ))}
+        <div className="text-center mb-16">
+          <h2 className="text-4xl lg:text-5xl font-serif font-bold text-black mb-4 uppercase tracking-tight">Our Work</h2>
+          <p className="text-gray-600 text-lg max-w-2xl mx-auto italic">Quality craftsmanship meets modern African elegance.</p>
         </div>
 
-        {/* Call to Action */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="mt-16 text-center"
-        >
-          <h3 className="text-3xl font-serif font-bold text-black mb-4">
-            Ready to Create Something Beautiful?
-          </h3>
-          <p className="text-gray-600 text-lg mb-8 max-w-2xl mx-auto">
-            Let us bring your vision to life with our expert tailoring services
-          </p>
-          <motion.button
-            whileHover={{ scale: 1.05, boxShadow: "0 10px 40px rgba(156, 125, 109, 0.3)" }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => {
-              const element = document.querySelector("#contact");
-              if (element) {
-                element.scrollIntoView({ behavior: "smooth" });
-              }
-            }}
-            className="bg-primary text-white px-8 py-4 rounded-md font-semibold text-lg hover:bg-primary/90 transition-all duration-300 shadow-lg"
-          >
-            Get Started Today
-          </motion.button>
-        </motion.div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+          {isLoading ? (
+            <div className="col-span-full py-20 flex justify-center"><Loader2 className="animate-spin text-primary" size={40} /></div>
+          ) : (
+            displayCategories.map((category, categoryIndex) => (
+              <motion.div
+                key={category.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: categoryIndex * 0.1 }}
+                className="group"
+              >
+                <div className="bg-white rounded-[2rem] shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden border border-gray-100 hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] transition-all h-full flex flex-col">
+                  {/* Image Stack Preview */}
+                  <div className="relative aspect-[4/5] overflow-hidden cursor-pointer" onClick={() => window.location.hash = `#category/${category.slug}`}>
+                    {category.images.length > 0 ? (
+                      <img src={category.images[0].src} alt={category.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                    ) : (
+                      <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-300"><ImageIcon size={48} /></div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-8">
+                      <div>
+                        <span className="bg-primary px-3 py-1 rounded-full text-[10px] font-black text-white uppercase tracking-widest mb-3 inline-block">Collection</span>
+                        <h3 className="text-3xl font-serif font-bold text-white leading-tight">{category.name}</h3>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-8 flex-1 flex flex-col justify-between">
+                    <p className="text-gray-500 text-sm mb-6 leading-relaxed italic">{category.description || `Explore our latest ${category.name} designs.`}</p>
+
+                    <div className="flex items-center justify-between gap-4 pt-4 border-t border-gray-50">
+                      <div className="flex -space-x-3">
+                        {category.images.slice(0, 3).map((img, idx) => (
+                          <div key={idx} className="w-10 h-10 rounded-full border-2 border-white overflow-hidden shadow-sm">
+                            <img src={img.src} alt="" className="w-full h-full object-cover" />
+                          </div>
+                        ))}
+                        {category.images.length > 3 && (
+                          <div className="w-10 h-10 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center text-[10px] font-bold text-gray-500 shadow-sm">
+                            +{category.images.length - 3}
+                          </div>
+                        )}
+                        {category.images.length === 0 && <span className="text-xs text-gray-400 font-bold">New Collection</span>}
+                      </div>
+                      <button
+                        onClick={() => window.location.hash = `#category/${category.slug}`}
+                        className="text-primary font-black uppercase text-xs tracking-widest flex items-center gap-2 hover:gap-3 transition-all underline underline-offset-8"
+                      >
+                        View Collection <Plus size={14} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            ))
+          )}
+        </div>
       </div>
 
-      {/* Lightbox */}
-      <Lightbox
-        open={lightboxOpen}
-        close={() => setLightboxOpen(false)}
-        slides={workCategories.flatMap((cat) =>
-          cat.images.map((img) => ({ src: img.src, title: img.title }))
-        )}
-        index={lightboxIndex}
-      />
+      <Lightbox open={lightboxOpen} close={() => setLightboxOpen(false)} slides={lightboxSlides} index={lightboxIndex} />
     </section>
   );
 };
 
 export default OurWork;
-

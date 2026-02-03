@@ -28,68 +28,7 @@ const Contact = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
             className="space-y-8"
-          >
-            <div className="flex items-start space-x-4">
-              <div className="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                <MapPin className="text-primary" size={24} />
-              </div>
-              <div>
-                <h3 className="text-xl font-serif font-bold text-black mb-2">
-                  Our Location
-                </h3>
-                <p className="text-gray-600">
-                  Koforidua<br />
-                  Eastern Region<br />
-                  Ghana
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start space-x-4">
-              <div className="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                <Phone className="text-primary" size={24} />
-              </div>
-              <div>
-                <h3 className="text-xl font-serif font-bold text-black mb-2">
-                  Phone
-                </h3>
-                <p className="text-gray-600">
-                  +233 (0) 249-494-505<br />
-                  +233 (0) 249-494-505
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start space-x-4">
-              <div className="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                <Mail className="text-primary" size={24} />
-              </div>
-              <div>
-                <h3 className="text-xl font-serif font-bold text-black mb-2">
-                  Email
-                </h3>
-                <p className="text-gray-600">
-                  info@manafclothing.com<br />
-                  appointments@moniek.com
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start space-x-4">
-              <div className="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                <Clock className="text-primary" size={24} />
-              </div>
-              <div>
-                <h3 className="text-xl font-serif font-bold text-black mb-2">
-                  Business Hours
-                </h3>
-                <p className="text-gray-600">
-                  Monday - Friday: 9:00 AM - 6:00 PM<br />
-                  Saturday: 10:00 AM - 4:00 PM<br />
-                  Sunday: Closed
-                </p>
-              </div>
-            </div>
+          >            
           </motion.div>
 
           {/* Contact Form */}

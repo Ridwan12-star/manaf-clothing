@@ -7,8 +7,11 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: '#9c7d6d',
-        secondary: '#f2e1d9',
+        primary: '#8B6F47', // Rich gold/bronze - sophisticated and elegant
+        secondary: '#D4AF8C', // Warm beige/gold accent
+        accent: '#C9A961', // Complementary gold tone
+        dark: '#5C4A37', // Deep brown for contrast
+        light: '#F5F1EB', // Soft cream background
       },
       fontFamily: {
         serif: ['Playfair Display', 'serif'],

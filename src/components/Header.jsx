@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ShoppingCart } from "lucide-react";
+import logo from "../assets/logo.jpeg";
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -46,10 +47,17 @@ const Header = () => {
           <motion.a
             href="#home"
             onClick={(e) => scrollToSection(e, "#home")}
-            className="text-2xl lg:text-3xl font-serif font-bold text-primary"
+            className="flex items-center gap-3"
             whileHover={{ scale: 1.05 }}
           >
-            Manaf Clothing
+            <img 
+              src={logo} 
+              alt="Manaf Clothing Logo" 
+              className="h-10 lg:h-12 w-auto object-contain"
+            />
+            <span className="text-xl lg:text-2xl font-serif font-bold text-primary hidden sm:block">
+              Manaf Clothing
+            </span>
           </motion.a>
 
           {/* Desktop Navigation */}
@@ -65,15 +73,44 @@ const Header = () => {
                 {link.name}
               </motion.a>
             ))}
+            {/* Cart Icon */}
+            <motion.button
+              onClick={() => {
+                window.dispatchEvent(new Event('open-cart'));
+              }}
+              className="relative text-black hover:text-primary transition-colors duration-300"
+              whileHover={{ scale: 1.1 }}
+              aria-label="Shopping Cart"
+            >
+              <ShoppingCart size={24} />
+              <span id="cart-count" className="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center hidden">
+                0
+              </span>
+            </motion.button>
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden text-black hover:text-primary transition-colors"
-          >
-            {isOpen ? <X size={28} /> : <Menu size={28} />}
-          </button>
+          {/* Mobile Menu Button & Cart */}
+          <div className="md:hidden flex items-center gap-4">
+            <motion.button
+              onClick={() => {
+                window.dispatchEvent(new Event('open-cart'));
+              }}
+              className="relative text-black hover:text-primary transition-colors"
+              whileHover={{ scale: 1.1 }}
+              aria-label="Shopping Cart"
+            >
+              <ShoppingCart size={24} />
+              <span id="cart-count-mobile" className="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center hidden">
+                0
+              </span>
+            </motion.button>
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="text-black hover:text-primary transition-colors"
+            >
+              {isOpen ? <X size={28} /> : <Menu size={28} />}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Navigation */}

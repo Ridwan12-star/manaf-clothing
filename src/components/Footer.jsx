@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
-import { Facebook, Instagram, Twitter, Phone, Mail } from 'lucide-react';
+import { Facebook, Instagram, Twitter, Phone, Mail, MapPin, Globe } from 'lucide-react';
+import logo from '../assets/logo.jpeg';
 
 const Footer = () => {
   const socialLinks = [
@@ -30,21 +31,29 @@ const Footer = () => {
       <div className="absolute inset-0 bg-gradient-to-br from-blue-900/50 to-gray-900/90 z-0" />
       
       <div className="relative z-10 container mx-auto px-4 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-6xl mx-auto">
           {/* Column 1: About */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
+            className="text-center md:text-left"
           >
-            <h3 className="text-2xl font-serif font-bold text-primary mb-4">
-              Manaf Clothing
-            </h3>
-            <p className="text-gray-300 mb-6 leading-relaxed">
+            <div className="flex flex-col items-center md:items-start mb-4">
+              <img 
+                src={logo} 
+                alt="Manaf Clothing Logo" 
+                className="h-16 w-auto object-contain mb-4"
+              />
+              <h3 className="text-2xl font-serif font-bold text-primary">
+                Manaf Clothing
+              </h3>
+            </div>
+            <p className="text-gray-300 mb-6 leading-relaxed text-center md:text-left">
               We are dedicated to creating custom-tailored clothing that perfectly fits your style and personality. Quality craftsmanship meets modern design.
             </p>
-            <div className="flex space-x-4">
+            <div className="flex space-x-4 justify-center md:justify-start">
               {socialLinks.map((social, index) => (
                 <motion.a
                   key={social.label}
@@ -65,6 +74,7 @@ const Footer = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.1 }}
+            className="text-center md:text-left"
           >
             <h3 className="text-xl font-serif font-bold text-primary mb-4">
               Quick Links
@@ -84,35 +94,50 @@ const Footer = () => {
             </ul>
           </motion.div>
 
-          {/* Column 3: Opening Hours */}
+          {/* Column 3: Contact & Location */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.2 }}
+            className="text-center md:text-left"
           >
             <h3 className="text-xl font-serif font-bold text-primary mb-4">
-              Opening Hours
+              Contact Us
             </h3>
-            <ul className="space-y-3 text-gray-300">
-              <li className="flex justify-between">
-                <span>Monday - Friday:</span>
-                <span className="font-semibold">9:00 AM - 6:00 PM</span>
-              </li>
-              <li className="flex justify-between">
-                <span>Sunday:</span>
-                <span className="font-semibold">10:00 AM - 4:00 PM</span>
-              </li>
-            </ul>
-            <div className="mt-6 space-y-2">
-              <div className="flex items-center space-x-2 text-gray-300">
-                <Phone size={18} className="text-primary" />
+            <div className="space-y-3 text-gray-300">
+              <div className="flex items-start justify-center md:justify-start space-x-2">
+                <MapPin size={18} className="text-primary mt-1 flex-shrink-0" />
+                <div>
+                  <p className="font-semibold">📍 Location</p>
+                  <p>Koforidua, Eastern Region, Ghana</p>
+                  <p className="text-primary font-semibold mt-2 flex items-center gap-1">
+                    <Globe size={16} />
+                    🌍 Delivery Worldwide Available
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center justify-center md:justify-start space-x-2 text-gray-300">
+                <Phone size={18} className="text-primary flex-shrink-0" />
                 <span>+ 233(0) 249-494-505</span>
               </div>
-              <div className="flex items-center space-x-2 text-gray-300">
-                <Mail size={18} className="text-primary" />
+              <div className="flex items-center justify-center md:justify-start space-x-2 text-gray-300">
+                <Mail size={18} className="text-primary flex-shrink-0" />
                 <span>info@manaf.com</span>
               </div>
+            </div>
+            <div className="mt-6">
+              <h4 className="text-lg font-serif font-bold text-primary mb-2">Opening Hours</h4>
+              <ul className="space-y-2 text-gray-300 text-sm">
+                <li className="flex justify-between">
+                  <span>Monday - Friday:</span>
+                  <span className="font-semibold">9:00 AM - 6:00 PM</span>
+                </li>
+                <li className="flex justify-between">
+                  <span>Sunday:</span>
+                  <span className="font-semibold">10:00 AM - 4:00 PM</span>
+                </li>
+              </ul>
             </div>
           </motion.div>
         </div>

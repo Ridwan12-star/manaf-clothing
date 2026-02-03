@@ -298,16 +298,7 @@ const AdminDashboard = () => {
                 ))}
 
                 {/* Exit to Website Option */}
-                <button
-                  onClick={() => {
-                    window.location.hash = "#exit-admin";
-                    window.location.reload();
-                  }}
-                  className="w-full flex items-center gap-4 p-5 rounded-3xl text-gray-500 hover:bg-gray-50 hover:text-black transition-all font-black text-xs uppercase tracking-widest"
-                >
-                  <div className="w-8 h-8 bg-gray-50 flex items-center justify-center rounded-lg"><Globe size={16} /></div>
-                  Exit to Website
-                </button>
+
               </nav>
 
               <div className="pt-8 border-t border-gray-100">

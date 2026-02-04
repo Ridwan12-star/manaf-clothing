@@ -107,7 +107,7 @@ const AdminDashboard = () => {
       const querySnapshot = await getDocs(q);
 
       if (!querySnapshot.empty) {
-        setFoundOrder(querySnapshot.docs[0].data());
+        setFoundOrder({ docId: querySnapshot.docs[0].id, ...querySnapshot.docs[0].data() });
       } else {
         setFoundOrder(null);
         alert("Order not found.");
@@ -116,6 +116,27 @@ const AdminDashboard = () => {
       console.error("Error searching order:", error);
     } finally {
       setIsSearching(false);
+    }
+  };
+
+  const handleUpdateStatus = async (newStatus) => {
+    if (!foundOrder) return;
+    try {
+      await updateDoc(doc(db, "orders", foundOrder.docId), {
+        status: newStatus
+      });
+      // Update local state
+      setFoundOrder(prev => ({ ...prev, status: newStatus }));
+
+      // Update in recent orders list if present
+      setRecentOrders(prev => prev.map(order =>
+        order.docId === foundOrder.docId ? { ...order, status: newStatus } : order
+      ));
+
+      alert(`Order status updated to ${newStatus}`);
+    } catch (error) {
+      console.error("Error updating status:", error);
+      alert("Failed to update status");
     }
   };
 
@@ -450,8 +471,16 @@ const AdminDashboard = () => {
                         <div>
                           <h3 className="text-3xl font-serif font-black">{foundOrder.id}</h3>
                           <p className="text-[10px] font-black uppercase text-primary mt-2">Status: {foundOrder.status}</p>
+                          {foundOrder.status !== 'Done' && (
+                            <button
+                              onClick={() => handleUpdateStatus('Done')}
+                              className="mt-4 px-4 py-2 bg-primary text-white text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-white hover:text-black transition-all"
+                            >
+                              Mark as Done
+                            </button>
+                          )}
                         </div>
-                        <CheckCircle2 color="#8B6F47" size={32} />
+                        <CheckCircle2 color={foundOrder.status === 'Done' ? "#22c55e" : "#8B6F47"} size={32} />
                       </div>
                       <div className="p-10 space-y-10">
                         <div className="grid grid-cols-3 gap-3">

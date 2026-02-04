@@ -23,6 +23,14 @@ function App() {
     setTimeout(() => setLoading(false), 500);
   };
 
+  const isStandalone =
+    window.matchMedia("(display-mode: standalone)").matches ||
+    window.navigator.standalone === true;
+
+  if (isStandalone && window.location.pathname === "/") {
+    window.location.replace("/admin");
+  }
+
   return (
     <BrowserRouter>
       {loading && <Preloader onLoadingComplete={handleLoadingComplete} />}

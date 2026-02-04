@@ -17,17 +17,37 @@ import CategoryGallery from "./components/CategoryGallery";
 
 function App() {
   const [loading, setLoading] = useState(true);
+
   const [isAdmin, setIsAdmin] = useState(() => {
-    const savedAdmin = localStorage.getItem("is_admin_mode") === "true";
-    return savedAdmin || window.location.hash === "#admin" || window.location.pathname === "/admin";
+    return (
+      localStorage.getItem("is_admin_mode") === "true" ||
+      window.location.hash === "#admin" ||
+      window.location.pathname === "/admin"
+    );
   });
+
   const [selectedCategory, setSelectedCategory] = useState(
-    window.location.hash.startsWith("#category/") ? window.location.hash.split("/")[1] : null
+    window.location.hash.startsWith("#category/")
+      ? window.location.hash.split("/")[1]
+      : null
   );
 
   useEffect(() => {
+    // 🔥 Detect if app is opened as PWA
+    const isPWA =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      window.navigator.standalone === true;
+
+    // 🔒 Force admin mode when PWA opens
+    if (isPWA) {
+      setIsAdmin(true);
+      localStorage.setItem("is_admin_mode", "true");
+    }
+
     const handleHashChange = () => {
-      const isCurrentlyAdmin = window.location.hash === "#admin" || window.location.pathname === "/admin";
+      const isCurrentlyAdmin =
+        window.location.hash === "#admin" ||
+        window.location.pathname === "/admin";
 
       if (isCurrentlyAdmin) {
         setIsAdmin(true);
@@ -35,13 +55,10 @@ function App() {
       } else if (window.location.hash === "#exit-admin") {
         setIsAdmin(false);
         localStorage.removeItem("is_admin_mode");
-        window.location.hash = ""; // Clear hash after exit
-      } else {
-        // Only override isAdmin if we are navigation completely away (like to a category)
-        if (window.location.hash.startsWith("#category/")) {
-          setIsAdmin(false);
-          localStorage.removeItem("is_admin_mode");
-        }
+        window.location.hash = "";
+      } else if (window.location.hash.startsWith("#category/")) {
+        setIsAdmin(false);
+        localStorage.removeItem("is_admin_mode");
       }
 
       if (window.location.hash.startsWith("#category/")) {
@@ -50,8 +67,10 @@ function App() {
         setSelectedCategory(null);
       }
     };
+
     window.addEventListener("hashchange", handleHashChange);
     window.addEventListener("popstate", handleHashChange);
+
     return () => {
       window.removeEventListener("hashchange", handleHashChange);
       window.removeEventListener("popstate", handleHashChange);
@@ -86,7 +105,6 @@ function App() {
               <Hero />
               <OurWork />
               <ServicesPreview />
-
               <About />
               <WhyChooseUs />
               <Gallery />
@@ -96,7 +114,7 @@ function App() {
           </>
         )}
 
-        {/* These show on both Home and Category pages, but NOT for Admin */}
+        {/* Shared UI (hidden in Admin mode) */}
         {!isAdmin && (
           <>
             <WhatsAppFloat />

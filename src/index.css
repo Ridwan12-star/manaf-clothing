@@ -14,8 +14,9 @@
     -webkit-text-size-adjust: 100%;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    overscroll-behavior: none;
-    touch-action: manipulation;
+    /* Allow normal scroll behavior on desktop touchpads */
+    /* overscroll-behavior: none; */
+    /* touch-action: manipulation; */
   }
 
   body {
@@ -27,12 +28,14 @@
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
     overflow-x: hidden;
+    overflow-y: auto;
     width: 100%;
     min-height: 100vh;
-    overscroll-behavior: none;
-    -webkit-overflow-scrolling: touch;
+    /* These can interfere with trackpad / wheel scrolling on some desktops */
+    /* overscroll-behavior: none; */
+    /* -webkit-overflow-scrolling: touch; */
     position: relative;
-    touch-action: pan-y;
+    /* touch-action: pan-y; */
   }
 
   img {
@@ -44,9 +47,7 @@
     width: 100%;
     min-height: 100vh;
     overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: none;
-    overscroll-behavior-x: none;
+   
   }
 
   /* Prevent horizontal scroll and shaking */

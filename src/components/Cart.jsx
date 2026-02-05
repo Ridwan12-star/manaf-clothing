@@ -96,6 +96,28 @@ const Cart = () => {
     };
 
     try {
+      // #region agent log
+      try {
+        fetch("http://127.0.0.1:7244/ingest/b5944c08-8a4f-4bff-b0a6-afa3bb47d378", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sessionId: "debug-session",
+            runId: "pre-fix-1",
+            hypothesisId: "H2",
+            location: "Cart.jsx:99",
+            message: "handleCreateOrder called",
+            data: {
+              itemsCount: cartItems.length,
+              measurementsMode,
+              colorMode,
+            },
+            timestamp: Date.now(),
+          }),
+        }).catch(() => {});
+      } catch {}
+      // #endregion agent log
+
       await addDoc(collection(db, "orders"), order);
 
       // Save locally too
@@ -114,6 +136,26 @@ const Cart = () => {
     } catch (error) {
       console.error("Error saving order:", error);
       alert("Failed to generate order. Please check your connection.");
+
+      // #region agent log
+      try {
+        fetch("http://127.0.0.1:7244/ingest/b5944c08-8a4f-4bff-b0a6-afa3bb47d378", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sessionId: "debug-session",
+            runId: "pre-fix-1",
+            hypothesisId: "H3",
+            location: "Cart.jsx:115",
+            message: "Order creation failed",
+            data: {
+              error: String(error?.message || error),
+            },
+            timestamp: Date.now(),
+          }),
+        }).catch(() => {});
+      } catch {}
+      // #endregion agent log
     }
   };
 

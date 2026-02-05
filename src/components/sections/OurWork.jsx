@@ -35,6 +35,26 @@ const OurWork = () => {
           images: []
         }));
 
+        // #region agent log
+        try {
+          fetch("http://127.0.0.1:7244/ingest/b5944c08-8a4f-4bff-b0a6-afa3bb47d378", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              sessionId: "debug-session",
+              runId: "pre-fix-1",
+              hypothesisId: "H4",
+              location: "OurWork.jsx:38",
+              message: "Categories fetched",
+              data: {
+                categoriesCount: fetchedCats.length,
+              },
+              timestamp: Date.now(),
+            }),
+          }).catch(() => {});
+        } catch {}
+        // #endregion agent log
+
         // 2. Fetch Portfolio Items
         const q = query(collection(db, "portfolio"), orderBy("createdAt", "desc"));
         const querySnapshot = await getDocs(q);
@@ -45,8 +65,48 @@ const OurWork = () => {
 
         setPortfolioItems(items);
         setCategories(fetchedCats);
+
+        // #region agent log
+        try {
+          fetch("http://127.0.0.1:7244/ingest/b5944c08-8a4f-4bff-b0a6-afa3bb47d378", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              sessionId: "debug-session",
+              runId: "pre-fix-1",
+              hypothesisId: "H5",
+              location: "OurWork.jsx:46",
+              message: "Portfolio fetched",
+              data: {
+                itemsCount: items.length,
+              },
+              timestamp: Date.now(),
+            }),
+          }).catch(() => {});
+        } catch {}
+        // #endregion agent log
       } catch (error) {
         console.error("Error fetching data:", error);
+
+        // #region agent log
+        try {
+          fetch("http://127.0.0.1:7244/ingest/b5944c08-8a4f-4bff-b0a6-afa3bb47d378", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              sessionId: "debug-session",
+              runId: "pre-fix-1",
+              hypothesisId: "H6",
+              location: "OurWork.jsx:49",
+              message: "Error fetching OurWork data",
+              data: {
+                error: String(error?.message || error),
+              },
+              timestamp: Date.now(),
+            }),
+          }).catch(() => {});
+        } catch {}
+        // #endregion agent log
       } finally {
         setIsLoading(false);
       }

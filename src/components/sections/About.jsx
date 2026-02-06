@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import aboutImage from "../../assets/manafff.jpeg";
+import aboutImage from "../../assets/manaf.WEBP";
 
 const About = () => {
   return (
@@ -19,7 +19,7 @@ const About = () => {
                 whileHover={{ scale: 1.02 }}
                 transition={{ duration: 0.3 }}
                 src={aboutImage}
-                alt="Moniek workspace"
+                alt="Manaf workspace"
                 className="rounded-lg shadow-2xl w-full h-[500px] object-cover object-top relative z-10"
               />
               {/* Decorative element */}

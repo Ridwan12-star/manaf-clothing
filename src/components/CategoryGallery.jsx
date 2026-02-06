@@ -52,18 +52,23 @@ const CategoryGallery = ({ categoryId }) => {
             title: image.title,
             image: image.src,
             category: categoryDetail?.name || categoryId,
+            quantity: 1,
         };
 
-        if (!cart.find(i => i.id === cartItem.id)) {
+        const existingItem = cart.find(i => i.id === cartItem.id);
+        if (existingItem) {
+            // If exists, increase quantity
+            existingItem.quantity = (existingItem.quantity || 1) + 1;
+        } else {
             cart.push(cartItem);
-            localStorage.setItem("cart", JSON.stringify(cart));
-            window.dispatchEvent(new Event("cart-updated"));
-
-            const button = e.currentTarget;
-            const original = button.innerText;
-            button.innerText = "✓ ADDED";
-            setTimeout(() => button.innerText = original, 2000);
         }
+        localStorage.setItem("cart", JSON.stringify(cart));
+        window.dispatchEvent(new Event("cart-updated"));
+
+        const button = e.currentTarget;
+        const original = button.innerText;
+        button.innerText = "✓ ADDED";
+        setTimeout(() => button.innerText = original, 2000);
     };
 
     if (isLoading) {

@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import heroImage from "../../assets/manaf.jpeg";
+import heroImage from "../../assets/manaf.WEBP";
 
 const Hero = () => {
   const scrollToServices = () => {

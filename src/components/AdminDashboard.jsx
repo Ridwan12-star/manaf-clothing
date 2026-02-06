@@ -16,10 +16,24 @@ const AdminDashboard = () => {
   const [searchId, setSearchId] = useState("");
   const [foundOrder, setFoundOrder] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(null);
 
-  // Recent Orders State
-  const [recentOrders, setRecentOrders] = useState([]);
+  // Orders State
+  const [recentOrders, setRecentOrders] = useState([]); // pending (all)
+  const [completedOrders, setCompletedOrders] = useState([]);
   const [isLoadingOrders, setIsLoadingOrders] = useState(false);
+  const [completedUnlocked, setCompletedUnlocked] = useState(false); // simple show/hide toggle
+
+  // Admin edit state (for measurements + customer info)
+  const [adminMeasurements, setAdminMeasurements] = useState({
+    chest: "",
+    waist: "",
+    hips: "",
+    length: "",
+  });
+  const [adminCustomerName, setAdminCustomerName] = useState("");
+  const [adminCustomerContact, setAdminCustomerContact] = useState("");
+  const [isSavingOrderEdits, setIsSavingOrderEdits] = useState(false);
 
   // Categories from Firestore
   const [categories, setCategories] = useState([]);
@@ -61,7 +75,7 @@ const AdminDashboard = () => {
   useEffect(() => {
     if (user) {
       fetchCategories();
-      fetchRecentOrders();
+      fetchOrders();
     }
   }, [user]);
 
@@ -83,19 +97,33 @@ const AdminDashboard = () => {
     }
   };
 
-  const fetchRecentOrders = async () => {
+  const fetchOrders = async () => {
     setIsLoadingOrders(true);
     try {
-      const q = query(collection(db, "orders"), orderBy("createdAt", "desc"), limit(20));
+      // Fetch by date only (no composite index needed), then split client-side
+      const q = query(collection(db, "orders"), orderBy("createdAt", "desc"), limit(200));
       const snap = await getDocs(q);
       const orders = snap.docs.map(d => ({ docId: d.id, ...d.data() }));
-      setRecentOrders(orders);
+      setRecentOrders(orders.filter((o) => (o.status || "Pending") === "Pending"));
+      setCompletedOrders(orders.filter((o) => o.status === "Done"));
     } catch (err) {
       console.error("Error fetching orders:", err);
     } finally {
       setIsLoadingOrders(false);
     }
   };
+
+  useEffect(() => {
+    if (!foundOrder) return;
+    setAdminMeasurements({
+      chest: foundOrder.measurements?.chest || "",
+      waist: foundOrder.measurements?.waist || "",
+      hips: foundOrder.measurements?.hips || "",
+      length: foundOrder.measurements?.length || "",
+    });
+    setAdminCustomerName(foundOrder.customer?.name || "");
+    setAdminCustomerContact(foundOrder.customer?.contact || "");
+  }, [foundOrder?.docId]);
 
   const handleSearchOrder = async (e) => {
     if (e) e.preventDefault();
@@ -134,9 +162,47 @@ const AdminDashboard = () => {
       ));
 
       alert(`Order status updated to ${newStatus}`);
+      await fetchOrders();
+
+      // If it was marked as done, remove it from the main view selection
+      if (newStatus === "Done") {
+        setFoundOrder(null);
+        setSelectedImageIndex(null);
+      }
     } catch (error) {
       console.error("Error updating status:", error);
       alert("Failed to update status");
+    }
+  };
+
+  const handleSaveOrderEdits = async () => {
+    if (!foundOrder) return;
+    setIsSavingOrderEdits(true);
+    try {
+      await updateDoc(doc(db, "orders", foundOrder.docId), {
+        measurements: {
+          chest: adminMeasurements.chest || "",
+          waist: adminMeasurements.waist || "",
+          hips: adminMeasurements.hips || "",
+          length: adminMeasurements.length || "",
+        },
+        customer: {
+          name: adminCustomerName || "",
+          contact: adminCustomerContact || "",
+        },
+      });
+      setFoundOrder((prev) => ({
+        ...prev,
+        measurements: { ...adminMeasurements },
+        customer: { name: adminCustomerName, contact: adminCustomerContact },
+      }));
+      await fetchOrders();
+      alert("Order updated.");
+    } catch (error) {
+      console.error("Error saving order edits:", error);
+      alert("Failed to save.");
+    } finally {
+      setIsSavingOrderEdits(false);
     }
   };
 
@@ -456,12 +522,53 @@ const AdminDashboard = () => {
 
               <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
                 <div className="xl:col-span-1 space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+                  <div className="flex items-center justify-between px-1">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Pending</p>
+                    <button
+                      onClick={() => {
+                        setCompletedUnlocked((v) => !v);
+                      }}
+                      className="text-[10px] font-black uppercase tracking-widest text-primary hover:text-black transition-all"
+                    >
+                      {completedUnlocked ? "Hide Completed" : "Show Completed"}
+                    </button>
+                  </div>
                   {recentOrders.map(order => (
                     <button key={order.docId} onClick={() => setFoundOrder(order)} className={`w-full p-6 rounded-2xl border transition-all text-left ${foundOrder?.id === order.id ? "bg-black text-white border-black shadow-xl" : "bg-white text-black border-gray-100 shadow-sm"}`}>
                       <p className="font-black text-sm tracking-widest">{order.id}</p>
                       <p className="text-[9px] font-bold opacity-40 mt-1 uppercase tracking-widest">{new Date(order.createdAt?.seconds * 1000).toLocaleDateString()}</p>
                     </button>
                   ))}
+
+                  {completedUnlocked && (
+                    <div className="pt-4 mt-4 border-t border-gray-100">
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Completed</p>
+                      <div className="space-y-3">
+                        {completedOrders.length === 0 ? (
+                          <div className="p-5 bg-gray-50 rounded-2xl border border-gray-100 text-center">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-gray-300">No completed orders</p>
+                          </div>
+                        ) : (
+                          completedOrders.map(order => (
+                            <button
+                              key={order.docId}
+                              onClick={() => setFoundOrder(order)}
+                              className={`w-full p-5 rounded-2xl border transition-all text-left ${
+                                foundOrder?.id === order.id
+                                  ? "bg-black text-white border-black shadow-xl"
+                                  : "bg-white text-black border-gray-100 shadow-sm"
+                              }`}
+                            >
+                              <p className="font-black text-xs tracking-widest">{order.id}</p>
+                              <p className="text-[9px] font-bold opacity-40 mt-1 uppercase tracking-widest">
+                                {new Date(order.createdAt?.seconds * 1000).toLocaleDateString()}
+                              </p>
+                            </button>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="xl:col-span-2">
@@ -483,27 +590,79 @@ const AdminDashboard = () => {
                         <CheckCircle2 color={foundOrder.status === 'Done' ? "#22c55e" : "#8B6F47"} size={32} />
                       </div>
                       <div className="p-10 space-y-10">
+                        {/* Customer info */}
+                        <div className="bg-gray-50 p-8 rounded-2xl border border-gray-100">
+                          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Customer</p>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <label className="text-[9px] font-black text-gray-300 uppercase tracking-widest">Name</label>
+                              <input
+                                value={adminCustomerName}
+                                onChange={(e) => setAdminCustomerName(e.target.value)}
+                                className="w-full p-4 bg-white border border-gray-100 rounded-2xl font-bold text-sm"
+                                placeholder="Customer name"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-[9px] font-black text-gray-300 uppercase tracking-widest">Contact</label>
+                              <input
+                                value={adminCustomerContact}
+                                onChange={(e) => setAdminCustomerContact(e.target.value)}
+                                className="w-full p-4 bg-white border border-gray-100 rounded-2xl font-bold text-sm"
+                                placeholder="Phone / WhatsApp"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
                         <div className="grid grid-cols-3 gap-3">
                           {foundOrder.items?.map((item, i) => (
-                            <div key={i} className="aspect-square rounded-2xl border-2 border-gray-50 overflow-hidden shadow-sm">
-                              <img src={item.image} className="w-full h-full object-cover" />
-                            </div>
+                            <button
+                              key={i}
+                              onClick={() => setSelectedImageIndex(i)}
+                              className="aspect-square rounded-2xl border-2 border-gray-50 overflow-hidden shadow-sm hover:border-primary transition-all cursor-pointer group"
+                            >
+                              <img src={item.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" alt={item.title || `Item ${i + 1}`} />
+                            </button>
                           ))}
                         </div>
                         <div className="bg-gray-50 p-8 rounded-2xl border border-gray-100">
                           <p className="text-[10px] font-black text-gray-400 uppercase mb-4">Requests</p>
                           <p className="text-xs font-bold text-black italic leading-relaxed">"{foundOrder.notes || 'None'}"</p>
                         </div>
-                        {foundOrder.measurementsMode === 'enter-yourself' && (
+                        {/* Measurements (admin editable even if customer chose visit-tailor) */}
+                        <div className="bg-gray-50 p-8 rounded-2xl border border-gray-100">
+                          <div className="flex items-center justify-between mb-4">
+                            <div>
+                              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Measurements</p>
+                              <p className="text-[10px] font-bold text-gray-400 mt-1">
+                                Mode: <span className="font-black uppercase">{foundOrder.measurementsMode || "visit-tailor"}</span>
+                              </p>
+                            </div>
+                          </div>
                           <div className="grid grid-cols-2 gap-4">
-                            {Object.entries(foundOrder.measurements).map(([k, v]) => (
-                              <div key={k} className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
-                                <p className="text-[8px] font-black text-gray-400 uppercase mb-1">{k}</p>
-                                <p className="text-lg font-black text-black">{v || '-'}</p>
+                            {["chest", "waist", "hips", "length"].map((k) => (
+                              <div key={k} className="space-y-2">
+                                <label className="text-[9px] font-black text-gray-300 uppercase tracking-widest">{k}</label>
+                                <input
+                                  value={adminMeasurements[k]}
+                                  onChange={(e) =>
+                                    setAdminMeasurements((prev) => ({ ...prev, [k]: e.target.value }))
+                                  }
+                                  className="w-full p-4 bg-white border border-gray-100 rounded-2xl font-bold text-sm"
+                                  placeholder="-"
+                                />
                               </div>
                             ))}
                           </div>
-                        )}
+                          <button
+                            onClick={handleSaveOrderEdits}
+                            disabled={isSavingOrderEdits}
+                            className="mt-6 w-full py-4 bg-black text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl disabled:opacity-60"
+                          >
+                            {isSavingOrderEdits ? "Saving..." : "Save Order Details"}
+                          </button>
+                        </div>
                       </div>
                     </motion.div>
                   ) : (
@@ -518,6 +677,88 @@ const AdminDashboard = () => {
           )}
         </AnimatePresence>
       </main>
+
+      {/* Large Image Modal */}
+      <AnimatePresence>
+        {selectedImageIndex !== null && foundOrder?.items && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedImageIndex(null)}
+              className="fixed inset-0 bg-black/90 backdrop-blur-md z-[200] flex items-center justify-center p-4"
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+                className="relative max-w-7xl w-full max-h-[90vh] flex flex-col"
+              >
+                <button
+                  onClick={() => setSelectedImageIndex(null)}
+                  className="absolute top-4 right-4 z-10 w-12 h-12 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all"
+                >
+                  <X size={24} />
+                </button>
+                
+                <div className="bg-white rounded-3xl overflow-hidden shadow-2xl">
+                  <div className="relative aspect-[4/5] max-h-[80vh] bg-black">
+                    <img
+                      src={foundOrder.items[selectedImageIndex].image}
+                      alt={foundOrder.items[selectedImageIndex].title || `Order Item ${selectedImageIndex + 1}`}
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  
+                  <div className="p-8 bg-white">
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <h3 className="text-2xl font-serif font-black text-black mb-1">
+                          {foundOrder.items[selectedImageIndex].title || `Item ${selectedImageIndex + 1}`}
+                        </h3>
+                        <p className="text-sm text-gray-500 font-bold uppercase tracking-widest">
+                          {foundOrder.items[selectedImageIndex].category || 'Category'}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Order Number</p>
+                        <p className="text-lg font-black text-black">{foundOrder.id}</p>
+                      </div>
+                    </div>
+                    
+                    {foundOrder.items[selectedImageIndex].quantity && (
+                      <div className="mt-4 p-4 bg-gray-50 rounded-2xl">
+                        <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Quantity</p>
+                        <p className="text-xl font-black text-black">{foundOrder.items[selectedImageIndex].quantity}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Navigation arrows */}
+                {foundOrder.items.length > 1 && (
+                  <>
+                    <button
+                      onClick={() => setSelectedImageIndex((prev) => (prev > 0 ? prev - 1 : foundOrder.items.length - 1))}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all"
+                    >
+                      <ChevronRight size={24} className="rotate-180" />
+                    </button>
+                    <button
+                      onClick={() => setSelectedImageIndex((prev) => (prev < foundOrder.items.length - 1 ? prev + 1 : 0))}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all"
+                    >
+                      <ChevronRight size={24} />
+                    </button>
+                  </>
+                )}
+              </motion.div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

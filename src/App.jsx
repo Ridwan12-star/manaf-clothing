@@ -61,8 +61,54 @@ function App() {
     };
   }, []);
   const handleLoadingComplete = () => {
-    setTimeout(() => setLoading(false), 500);
+    setTimeout(() => {
+      setLoading(false);
+      // Ensure body scrolling is enabled after preloader
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.height = '';
+    }, 500);
   };
+
+  // Manage body scroll during preloader
+  useEffect(() => {
+    if (loading) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+      document.body.style.height = '100%';
+    } else {
+      // Always ensure scroll is enabled when not loading
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.height = '';
+    }
+    
+    // Cleanup function to ensure scroll is always enabled
+    return () => {
+      if (!loading) {
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.width = '';
+        document.body.style.height = '';
+      }
+    };
+  }, [loading]);
+  
+  // Additional safety check - ensure scroll is enabled after component mounts
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!loading) {
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.width = '';
+        document.body.style.height = '';
+      }
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
   // #region agent log
   try {
     fetch("http://127.0.0.1:7244/ingest/b5944c08-8a4f-4bff-b0a6-afa3bb47d378", {

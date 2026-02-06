@@ -5,12 +5,12 @@ import "yet-another-react-lightbox/styles.css";
 import { ShoppingCart } from "lucide-react";
 
 // Import existing images
-import img1 from "../../assets/imgone.png";
-import img2 from "../../assets/service_alterations_1769960137293.png";
-import img3 from "../../assets/imgtwo.png";
-import img4 from "../../assets/about_workspace_1769960172951.png";
-import img5 from "../../assets/gallery_suit_detail_1769960193088.png";
-import img6 from "../../assets/hero_tailor_measuring_1769960105944.png";
+import img1 from "../../assets/Y.jpeg";
+import img2 from "../../assets/ye.jpeg";
+import img3 from "../../assets/family.jpeg";
+import img4 from "../../assets/wh.jpeg";
+import img5 from "../../assets/bl.jpeg";
+import img6 from "../../assets/sh.jpeg";
 
 const Gallery = () => {
   const [filter, setFilter] = useState("all");
@@ -27,7 +27,7 @@ const Gallery = () => {
       category: "alterations",
       title: "Precision Alterations",
     },
-    { id: 3, image: img3, category: "dresses", title: "Elegant Evening Dress" },
+    { id: 3, image: img3, category: "dresses", title: "family photoshoot" },
     { id: 4, image: img4, category: "suits", title: "Tailoring Workshop" },
     { id: 5, image: img5, category: "suits", title: "Suit Details" },
     { id: 6, image: img6, category: "shirts", title: "Custom Shirt" },
@@ -55,22 +55,27 @@ const Gallery = () => {
       title: item.title,
       image: item.image,
       category: item.category,
+      quantity: 1,
     };
     
     // Check if item already exists
-    if (!cart.find((i) => i.id === cartItem.id)) {
+    const existingItem = cart.find((i) => i.id === cartItem.id);
+    if (existingItem) {
+      // If exists, increase quantity
+      existingItem.quantity = (existingItem.quantity || 1) + 1;
+    } else {
       cart.push(cartItem);
-      localStorage.setItem("cart", JSON.stringify(cart));
-      window.dispatchEvent(new Event("cart-updated"));
-      
-      // Show feedback
-      const button = e.currentTarget;
-      const originalHTML = button.innerHTML;
-      button.innerHTML = '<span class="text-green-500">✓ Added</span>';
-      setTimeout(() => {
-        button.innerHTML = originalHTML;
-      }, 2000);
     }
+    localStorage.setItem("cart", JSON.stringify(cart));
+    window.dispatchEvent(new Event("cart-updated"));
+    
+    // Show feedback
+    const button = e.currentTarget;
+    const originalHTML = button.innerHTML;
+    button.innerHTML = '<span class="text-green-500">✓ Added</span>';
+    setTimeout(() => {
+      button.innerHTML = originalHTML;
+    }, 2000);
   };
 
   return (

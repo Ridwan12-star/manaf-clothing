@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ShoppingCart, Trash2, MessageCircle, CheckCircle, Copy, ExternalLink } from "lucide-react";
+import { X, ShoppingCart, Trash2, MessageCircle, CheckCircle, Copy, ExternalLink, Plus, Minus } from "lucide-react";
 import { db } from "../firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
@@ -11,6 +11,8 @@ const Cart = () => {
   const [generatedId, setGeneratedId] = useState("");
 
   // Order Details
+  const [customerName, setCustomerName] = useState("");
+  const [customerContact, setCustomerContact] = useState("");
   const [measurementsMode, setMeasurementsMode] = useState("visit-tailor");
   const [measurements, setMeasurements] = useState({
     chest: "",
@@ -25,8 +27,14 @@ const Cart = () => {
   useEffect(() => {
     const handleCartUpdate = () => {
       const items = JSON.parse(localStorage.getItem("cart") || "[]");
-      setCartItems(items);
-      updateCartCount(items.length);
+      // Ensure all items have quantity
+      const itemsWithQuantity = items.map(item => ({
+        ...item,
+        quantity: item.quantity || 1
+      }));
+      setCartItems(itemsWithQuantity);
+      const totalCount = itemsWithQuantity.reduce((sum, item) => sum + (item.quantity || 1), 0);
+      updateCartCount(totalCount);
     };
 
     const handleCartOpen = () => {
@@ -44,6 +52,19 @@ const Cart = () => {
     };
   }, []);
 
+  // Manage body scroll when cart is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   const updateCartCount = (count) => {
     const countElements = document.querySelectorAll("#cart-count, #cart-count-mobile");
     countElements.forEach((el) => {
@@ -60,7 +81,23 @@ const Cart = () => {
     const items = cartItems.filter((item) => item.id !== id);
     setCartItems(items);
     localStorage.setItem("cart", JSON.stringify(items));
-    updateCartCount(items.length);
+    const totalCount = items.reduce((sum, item) => sum + (item.quantity || 1), 0);
+    updateCartCount(totalCount);
+    window.dispatchEvent(new Event("cart-updated"));
+  };
+
+  const updateQuantity = (id, change) => {
+    const items = cartItems.map((item) => {
+      if (item.id === id) {
+        const newQuantity = Math.max(1, (item.quantity || 1) + change);
+        return { ...item, quantity: newQuantity };
+      }
+      return item;
+    });
+    setCartItems(items);
+    localStorage.setItem("cart", JSON.stringify(items));
+    const totalCount = items.reduce((sum, item) => sum + (item.quantity || 1), 0);
+    updateCartCount(totalCount);
     window.dispatchEvent(new Event("cart-updated"));
   };
 
@@ -79,12 +116,20 @@ const Cart = () => {
 
   const handleCreateOrder = async () => {
     if (cartItems.length === 0) return;
+    if (!customerName.trim() || !customerContact.trim()) {
+      alert("Please enter your name and contact.");
+      return;
+    }
 
     const id = generateOrderId();
     const order = {
       id,
       status: "Pending",
       items: cartItems,
+      customer: {
+        name: customerName.trim(),
+        contact: customerContact.trim(),
+      },
       measurementsMode,
       measurements: measurementsMode === "enter-yourself" ? measurements : {},
       colorChoice: {
@@ -114,8 +159,8 @@ const Cart = () => {
             },
             timestamp: Date.now(),
           }),
-        }).catch(() => {});
-      } catch {}
+        }).catch(() => { });
+      } catch { }
       // #endregion agent log
 
       await addDoc(collection(db, "orders"), order);
@@ -130,6 +175,8 @@ const Cart = () => {
 
       // Clear cart
       setCartItems([]);
+      setCustomerName("");
+      setCustomerContact("");
       localStorage.setItem("cart", JSON.stringify([]));
       updateCartCount(0);
       window.dispatchEvent(new Event("cart-updated"));
@@ -153,8 +200,8 @@ const Cart = () => {
             },
             timestamp: Date.now(),
           }),
-        }).catch(() => {});
-      } catch {}
+        }).catch(() => { });
+      } catch { }
       // #endregion agent log
     }
   };
@@ -240,6 +287,25 @@ const Cart = () => {
                     </div>
                   ) : (
                     <div className="space-y-6">
+                      {/* Customer Info */}
+                      <div className="bg-gray-50 p-5 rounded-2xl border border-gray-100">
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Your Details</p>
+                        <div className="space-y-3">
+                          <input
+                            value={customerName}
+                            onChange={(e) => setCustomerName(e.target.value)}
+                            placeholder="Your full name"
+                            className="w-full p-4 bg-white border border-gray-100 rounded-2xl text-sm font-bold"
+                          />
+                          <input
+                            value={customerContact}
+                            onChange={(e) => setCustomerContact(e.target.value)}
+                            placeholder="Phone / WhatsApp number"
+                            className="w-full p-4 bg-white border border-gray-100 rounded-2xl text-sm font-bold"
+                          />
+                        </div>
+                      </div>
+
                       {/* Items List */}
                       <div className="space-y-3">
                         {cartItems.map((item) => (
@@ -248,6 +314,25 @@ const Cart = () => {
                             <div className="flex-1">
                               <h4 className="font-bold text-black">{item.title}</h4>
                               <p className="text-xs text-gray-500 font-medium">{item.category}</p>
+                              
+                              {/* Quantity Controls */}
+                              <div className="flex items-center gap-3 mt-3">
+                                <button
+                                  onClick={() => updateQuantity(item.id, -1)}
+                                  className="w-8 h-8 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:text-black hover:border-black transition-all"
+                                >
+                                  <Minus size={14} />
+                                </button>
+                                <span className="text-sm font-black text-black min-w-[2rem] text-center">
+                                  {item.quantity || 1}
+                                </span>
+                                <button
+                                  onClick={() => updateQuantity(item.id, 1)}
+                                  className="w-8 h-8 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:text-black hover:border-black transition-all"
+                                >
+                                  <Plus size={14} />
+                                </button>
+                              </div>
                             </div>
                             <button
                               onClick={() => removeFromCart(item.id)}

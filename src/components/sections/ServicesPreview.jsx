@@ -1,14 +1,14 @@
 import { motion } from "framer-motion";
-import service1 from "../../assets/imgone.png";
+import service1 from "../../assets/IMG_3978.JPG";
 import service2 from "../../assets/service_alterations_1769960137293.png";
-import service3 from "../../assets/imgtwo.png";
+import service3 from "../../assets/Kid.jpeg";
 
 const ServicesPreview = () => {
   const services = [
     {
       id: 1,
       image: service1,
-      title: "Custom Tailoring",
+      title: "Premium Quality Fabrics",
       description:
         "Bespoke garments crafted to your exact measurements and style preferences.",
     },
@@ -22,7 +22,7 @@ const ServicesPreview = () => {
     {
       id: 3,
       image: service3,
-      title: "Design Consultation",
+      title: "Fast & Reliable Delivery",
       description:
         "Personalized styling advice and fabric selection for your unique vision.",
     },

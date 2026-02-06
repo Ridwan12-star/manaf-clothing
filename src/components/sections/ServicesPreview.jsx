@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import service1 from "../../assets/IMG_3978.JPG";
+import service1 from "../../assets/IMG_3978.jpg";
 import service2 from "../../assets/service_alterations_1769960137293.png";
 import service3 from "../../assets/Kid.jpeg";
 

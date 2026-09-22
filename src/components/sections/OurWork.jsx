@@ -1,26 +1,14 @@
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import Lightbox from "yet-another-react-lightbox";
-import "yet-another-react-lightbox/styles.css";
-import { Plus, Image as ImageIcon, ShoppingCart, Loader2 } from "lucide-react";
+import { motion } from "framer-motion";
+import { Plus, Image as ImageIcon, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { db } from "../../firebase";
 import { collection, query, orderBy, getDocs } from "firebase/firestore";
 
-// Fallback images if needed
-import img1 from "../../assets/customized suits.jpg";
-import img2 from "../../assets/1.jpg";
-import img3 from "../../assets/2.jpg";
-import img4 from "../../assets/3.jpg";
-import img5 from "../../assets/4.jpg";
-import img6 from "../../assets/5.jpg";
-
 const OurWork = () => {
-  const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [page, setPage] = useState(0);
   const [portfolioItems, setPortfolioItems] = useState([]);
   const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [lightboxSlides, setLightboxSlides] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -79,20 +67,27 @@ const OurWork = () => {
   };
 
   const displayCategories = getMergedCategories();
+  const pageCount = Math.ceil(displayCategories.length / 6);
+  const visibleCategories = displayCategories.slice(page * 6, page * 6 + 6);
+
+  const changePage = (nextPage) => {
+    setPage(nextPage);
+    document.getElementById("our-work")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   return (
-    <section id="our-work" className="py-20 bg-white">
-      <div className="container mx-auto px-4 lg:px-8">
-        <div className="text-center mb-16">
+    <section id="our-work" className="py-16 bg-white scroll-mt-20">
+      <div className="container mx-auto px-4 lg:px-8 max-w-6xl">
+        <div className="text-center mb-10">
           <h2 className="text-4xl lg:text-5xl font-serif font-bold text-black mb-4 uppercase tracking-tight">Our Work</h2>
           <p className="text-gray-600 text-lg max-w-2xl mx-auto italic">Quality craftsmanship meets modern African elegance.</p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-5 lg:gap-6">
           {isLoading ? (
             <div className="col-span-full py-20 flex justify-center"><Loader2 className="animate-spin text-primary" size={40} /></div>
           ) : (
-            displayCategories.map((category, categoryIndex) => (
+            visibleCategories.map((category, categoryIndex) => (
               <motion.div
                 key={category.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -102,24 +97,24 @@ const OurWork = () => {
               >
                 <div className="bg-white rounded-xl md:rounded-2xl shadow-[0_4px_20px_-8px_rgba(0,0,0,0.1)] overflow-hidden border border-gray-100 hover:shadow-[0_8px_30px_-10px_rgba(0,0,0,0.15)] transition-all h-full flex flex-col">
                   {/* Image Stack Preview */}
-                  <div className="relative aspect-[3/4] overflow-hidden cursor-pointer" onClick={() => window.location.hash = `#category/${category.slug}`}>
+                  <div className="relative aspect-[4/3] overflow-hidden cursor-pointer" onClick={() => window.location.hash = `#category/${category.slug}`}>
                     {category.images.length > 0 ? (
                       <img src={category.images[0].src} alt={category.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                     ) : (
                       <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-300"><ImageIcon size={32} /></div>
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex items-end p-4 md:p-6">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex items-end p-3 md:p-4">
                       <div className="w-full">
                         <span className="bg-primary px-2 py-0.5 rounded-full text-[8px] md:text-[10px] font-black text-white uppercase tracking-widest mb-2 inline-block">Collection</span>
-                        <h3 className="text-base md:text-xl lg:text-2xl font-serif font-bold text-white leading-tight line-clamp-2">{category.name}</h3>
+                        <h3 className="text-sm md:text-lg lg:text-xl font-serif font-bold text-white leading-tight line-clamp-2">{category.name}</h3>
                       </div>
                     </div>
                   </div>
 
-                  <div className="p-4 md:p-6 flex-1 flex flex-col justify-between">
-                    <p className="text-gray-500 text-xs md:text-sm mb-4 leading-relaxed italic line-clamp-2">{category.description || `Explore our latest ${category.name} designs.`}</p>
+                  <div className="p-3 md:p-4 flex-1 flex flex-col justify-between">
+                    <p className="text-gray-500 text-xs md:text-sm mb-3 leading-relaxed italic line-clamp-2">{category.description || `Explore our latest ${category.name} designs.`}</p>
 
-                    <div className="flex items-center justify-between gap-2 md:gap-4 pt-3 md:pt-4 border-t border-gray-50">
+                    <div className="flex items-center justify-between gap-2 md:gap-4 pt-3 border-t border-gray-50">
                       <div className="flex -space-x-2 md:-space-x-3">
                         {category.images.slice(0, 3).map((img, idx) => (
                           <div key={idx} className="w-6 h-6 md:w-8 md:h-8 rounded-full border-2 border-white overflow-hidden shadow-sm">
@@ -146,9 +141,14 @@ const OurWork = () => {
             ))
           )}
         </div>
+        {pageCount > 1 && (
+          <nav className="flex items-center justify-center gap-3 mt-8" aria-label="Collection pages">
+            <button type="button" onClick={() => changePage(page - 1)} disabled={page === 0} aria-label="Previous collections page" className="p-3 rounded-full border border-gray-200 disabled:opacity-40 hover:bg-gray-100"><ChevronLeft size={20} /></button>
+            <span className="text-sm font-bold text-gray-600">Page {page + 1} of {pageCount}</span>
+            <button type="button" onClick={() => changePage(page + 1)} disabled={page === pageCount - 1} aria-label="Next collections page" className="p-3 rounded-full border border-gray-200 disabled:opacity-40 hover:bg-gray-100"><ChevronRight size={20} /></button>
+          </nav>
+        )}
       </div>
-
-      <Lightbox open={lightboxOpen} close={() => setLightboxOpen(false)} slides={lightboxSlides} index={lightboxIndex} />
     </section>
   );
 };

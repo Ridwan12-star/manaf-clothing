@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Lightbox from "yet-another-react-lightbox";
-import "yet-another-react-lightbox/styles.css";
-import { ShoppingCart, ArrowLeft, Loader2, Image as ImageIcon } from "lucide-react";
+import { ShoppingCart, ArrowLeft, Loader2, Image as ImageIcon, X, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from "lucide-react";
 import { db } from "../firebase";
 import { collection, query, orderBy, getDocs } from "firebase/firestore";
 
@@ -12,6 +10,7 @@ const CategoryGallery = ({ categoryId }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [lightboxOpen, setLightboxOpen] = useState(false);
     const [lightboxIndex, setLightboxIndex] = useState(0);
+    const [isZoomed, setIsZoomed] = useState(false);
 
     const slugify = (text) => text.toLowerCase().replace(/\s+/g, '-');
 
@@ -43,6 +42,28 @@ const CategoryGallery = ({ categoryId }) => {
         if (categoryId) loadContent();
         window.scrollTo(0, 0);
     }, [categoryId]);
+
+    useEffect(() => {
+        if (!lightboxOpen) return;
+        const previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+        const onKeyDown = (event) => {
+            if (event.key === "Escape") setLightboxOpen(false);
+            if (event.key === "ArrowRight") {
+                setLightboxIndex(index => (index + 1) % images.length);
+                setIsZoomed(false);
+            }
+            if (event.key === "ArrowLeft") {
+                setLightboxIndex(index => (index - 1 + images.length) % images.length);
+                setIsZoomed(false);
+            }
+        };
+        window.addEventListener("keydown", onKeyDown);
+        return () => {
+            document.body.style.overflow = previousOverflow;
+            window.removeEventListener("keydown", onKeyDown);
+        };
+    }, [lightboxOpen, images.length]);
 
     const addToCart = (e, image) => {
         e.stopPropagation();
@@ -104,7 +125,7 @@ const CategoryGallery = ({ categoryId }) => {
                 </div>
 
                 {/* Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
                     <AnimatePresence>
                         {images.map((image, index) => (
                             <motion.div
@@ -115,6 +136,7 @@ const CategoryGallery = ({ categoryId }) => {
                                 className="group relative aspect-[4/5] rounded-[2.5rem] overflow-hidden shadow-2xl transition-all cursor-pointer"
                                 onClick={() => {
                                     setLightboxIndex(index);
+                                    setIsZoomed(false);
                                     setLightboxOpen(true);
                                 }}
                             >
@@ -157,12 +179,30 @@ const CategoryGallery = ({ categoryId }) => {
                 )}
             </div>
 
-            <Lightbox
-                open={lightboxOpen}
-                close={() => setLightboxOpen(false)}
-                slides={images.map(img => ({ src: img.src, title: img.title }))}
-                index={lightboxIndex}
-            />
+            {lightboxOpen && images[lightboxIndex] && (
+                <div className="fixed inset-0 z-[200] bg-black text-white" role="dialog" aria-modal="true" aria-label={`${images[lightboxIndex].title || "Design"} full screen view`}>
+                    <div className="absolute inset-0 overflow-auto flex items-center justify-center" onClick={() => setLightboxOpen(false)}>
+                        <img
+                            src={images[lightboxIndex].src}
+                            alt={images[lightboxIndex].title || "Clothing design"}
+                            className={isZoomed ? "block max-w-none w-[150vw] h-[150dvh] object-contain m-auto cursor-zoom-out" : "block w-full h-full object-contain cursor-zoom-in"}
+                            onClick={(event) => { event.stopPropagation(); setIsZoomed(value => !value); }}
+                        />
+                    </div>
+                    <div className="absolute top-0 inset-x-0 flex items-start justify-between gap-4 p-4 md:p-6 bg-gradient-to-b from-black/80 to-transparent pointer-events-none">
+                        <div className="min-w-0 pt-2">
+                            <p className="text-sm md:text-lg font-bold truncate">{images[lightboxIndex].title}</p>
+                            <p className="text-xs text-white/75">{lightboxIndex + 1} of {images.length}</p>
+                        </div>
+                        <button type="button" onClick={() => setLightboxOpen(false)} aria-label="Close full screen image" className="pointer-events-auto shrink-0 p-3 rounded-full bg-black/70 hover:bg-black"><X size={24} /></button>
+                    </div>
+                    <div className="absolute bottom-0 inset-x-0 flex items-center justify-center gap-4 p-4 md:p-6 bg-gradient-to-t from-black/80 to-transparent pointer-events-none">
+                        {images.length > 1 && <button type="button" onClick={() => { setLightboxIndex(index => (index - 1 + images.length) % images.length); setIsZoomed(false); }} aria-label="Previous design" className="pointer-events-auto p-3 rounded-full bg-black/70 hover:bg-black"><ChevronLeft size={24} /></button>}
+                        <button type="button" onClick={() => setIsZoomed(value => !value)} aria-label={isZoomed ? "Zoom out" : "Zoom in"} className="pointer-events-auto p-3 rounded-full bg-black/70 hover:bg-black">{isZoomed ? <ZoomOut size={24} /> : <ZoomIn size={24} />}</button>
+                        {images.length > 1 && <button type="button" onClick={() => { setLightboxIndex(index => (index + 1) % images.length); setIsZoomed(false); }} aria-label="Next design" className="pointer-events-auto p-3 rounded-full bg-black/70 hover:bg-black"><ChevronRight size={24} /></button>}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

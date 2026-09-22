@@ -8,6 +8,7 @@ const Cart = () => {
   const [cartItems, setCartItems] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [generatedId, setGeneratedId] = useState("");
 
   // Order Details
@@ -111,11 +112,11 @@ const Cart = () => {
     const sec = String(now.getSeconds()).padStart(2, "0");
 
     // Using simple timestamp + random for uniqueness
-    return `MN-${y}${m}${d}-${h}${min}${sec}`;
+    return `MN-${y}${m}${d}-${h}${min}${sec}-${crypto.randomUUID().slice(0, 6).toUpperCase()}`;
   };
 
   const handleCreateOrder = async () => {
-    if (cartItems.length === 0) return;
+    if (cartItems.length === 0 || isSubmitting) return;
     if (!customerName.trim() || !customerContact.trim()) {
       alert("Please enter your name and contact.");
       return;
@@ -140,35 +141,9 @@ const Cart = () => {
       createdAt: serverTimestamp(),
     };
 
+    setIsSubmitting(true);
     try {
-      // #region agent log
-      try {
-        fetch("http://127.0.0.1:7244/ingest/b5944c08-8a4f-4bff-b0a6-afa3bb47d378", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            sessionId: "debug-session",
-            runId: "pre-fix-1",
-            hypothesisId: "H2",
-            location: "Cart.jsx:99",
-            message: "handleCreateOrder called",
-            data: {
-              itemsCount: cartItems.length,
-              measurementsMode,
-              colorMode,
-            },
-            timestamp: Date.now(),
-          }),
-        }).catch(() => { });
-      } catch { }
-      // #endregion agent log
-
       await addDoc(collection(db, "orders"), order);
-
-      // Save locally too
-      const existing = JSON.parse(localStorage.getItem("orders") || "[]");
-      existing.push(order);
-      localStorage.setItem("orders", JSON.stringify(existing));
 
       setGeneratedId(id);
       setIsSuccess(true);
@@ -184,25 +159,8 @@ const Cart = () => {
       console.error("Error saving order:", error);
       alert("Failed to generate order. Please check your connection.");
 
-      // #region agent log
-      try {
-        fetch("http://127.0.0.1:7244/ingest/b5944c08-8a4f-4bff-b0a6-afa3bb47d378", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            sessionId: "debug-session",
-            runId: "pre-fix-1",
-            hypothesisId: "H3",
-            location: "Cart.jsx:115",
-            message: "Order creation failed",
-            data: {
-              error: String(error?.message || error),
-            },
-            timestamp: Date.now(),
-          }),
-        }).catch(() => { });
-      } catch { }
-      // #endregion agent log
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -400,9 +358,10 @@ const Cart = () => {
               <div className="p-8 border-t bg-white">
                 <button
                   onClick={handleCreateOrder}
+                  disabled={isSubmitting}
                   className="w-full py-5 bg-primary text-white rounded-[1.5rem] font-black flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl uppercase tracking-widest text-sm"
                 >
-                  Generate Order Number
+                  {isSubmitting ? "Saving Order..." : "Generate Order Number"}
                 </button>
               </div>
             )}

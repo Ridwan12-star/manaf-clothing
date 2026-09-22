@@ -393,7 +393,7 @@ const AdminDashboard = () => {
                   onClick={() => {
                     signOut(auth);
                     localStorage.removeItem("is_admin_mode");
-                    window.location.hash = "";
+                    window.history.replaceState(null, "", "/");
                     window.location.reload();
                   }}
                   className="w-full flex items-center gap-4 p-5 rounded-3xl text-red-400 hover:bg-red-50 hover:text-red-600 transition-all font-black text-xs uppercase tracking-widest"

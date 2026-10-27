@@ -1,210 +1,46 @@
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ShoppingCart, ArrowLeft, Loader2, Image as ImageIcon, X, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from "lucide-react";
-import { db } from "../firebase";
-import { collection, query, orderBy, getDocs } from "firebase/firestore";
+import { useState } from "react";
+import { ArrowLeft, ArrowUpRight, Check, ShoppingBag, ZoomIn } from "lucide-react";
+import Lightbox from "yet-another-react-lightbox";
+import Zoom from "yet-another-react-lightbox/plugins/zoom";
+import "yet-another-react-lightbox/styles.css";
+import { useCollections } from "../hooks/useCollections";
+import { collectionSlug, fashionCopy } from "../lib/content";
+import { addSelection } from "../lib/cart";
 
-const CategoryGallery = ({ categoryId }) => {
-    const [images, setImages] = useState([]);
-    const [categoryDetail, setCategoryDetail] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [lightboxOpen, setLightboxOpen] = useState(false);
-    const [lightboxIndex, setLightboxIndex] = useState(0);
-    const [isZoomed, setIsZoomed] = useState(false);
+export default function CategoryGallery({ categoryId }) {
+  const categories = useCollections();
+  const category = categories.find(item => item.slug === collectionSlug(categoryId));
+  const [lightboxIndex, setLightboxIndex] = useState(-1);
+  const [added, setAdded] = useState([]);
+  const images = category?.images || [];
 
-    const slugify = (text) => text.toLowerCase().replace(/\s+/g, '-');
+  const select = image => {
+    addSelection(image, category.name);
+    setAdded(current => [...current, image.id]);
+  };
 
-    useEffect(() => {
-        const loadContent = async () => {
-            setIsLoading(true);
-            try {
-                // 1. Fetch Categories to find the detail
-                const catSnap = await getDocs(collection(db, "categories"));
-                const allCats = catSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                const currentCat = allCats.find(c => slugify(c.name) === categoryId);
-                setCategoryDetail(currentCat || { name: categoryId.replace(/-/g, ' '), description: "Bespoke designs tailored for you." });
-
-                // 2. Fetch Portfolio Items
-                const q = query(collection(db, "portfolio"), orderBy("createdAt", "desc"));
-                const querySnapshot = await getDocs(q);
-                const fbItems = querySnapshot.docs
-                    .map(doc => ({ id: doc.id, ...doc.data() }))
-                    .filter(item => slugify(item.category) === categoryId);
-
-                setImages(fbItems.map(item => ({ id: item.id, src: item.imageUrl, title: item.title })));
-            } catch (error) {
-                console.error("Error loading gallery:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        if (categoryId) loadContent();
-        window.scrollTo(0, 0);
-    }, [categoryId]);
-
-    useEffect(() => {
-        if (!lightboxOpen) return;
-        const previousOverflow = document.body.style.overflow;
-        document.body.style.overflow = "hidden";
-        const onKeyDown = (event) => {
-            if (event.key === "Escape") setLightboxOpen(false);
-            if (event.key === "ArrowRight") {
-                setLightboxIndex(index => (index + 1) % images.length);
-                setIsZoomed(false);
-            }
-            if (event.key === "ArrowLeft") {
-                setLightboxIndex(index => (index - 1 + images.length) % images.length);
-                setIsZoomed(false);
-            }
-        };
-        window.addEventListener("keydown", onKeyDown);
-        return () => {
-            document.body.style.overflow = previousOverflow;
-            window.removeEventListener("keydown", onKeyDown);
-        };
-    }, [lightboxOpen, images.length]);
-
-    const addToCart = (e, image) => {
-        e.stopPropagation();
-        const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-        const cartItem = {
-            id: `gallery-${categoryId}-${image.id}`,
-            title: image.title,
-            image: image.src,
-            category: categoryDetail?.name || categoryId,
-            quantity: 1,
-        };
-
-        const existingItem = cart.find(i => i.id === cartItem.id);
-        if (existingItem) {
-            // If exists, increase quantity
-            existingItem.quantity = (existingItem.quantity || 1) + 1;
-        } else {
-            cart.push(cartItem);
-        }
-        localStorage.setItem("cart", JSON.stringify(cart));
-        window.dispatchEvent(new Event("cart-updated"));
-
-        const button = e.currentTarget;
-        const original = button.innerText;
-        button.innerText = "✓ ADDED";
-        setTimeout(() => button.innerText = original, 2000);
-    };
-
-    if (isLoading) {
-        return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-white">
-                <Loader2 className="animate-spin text-primary mb-4" size={48} />
-                <p className="text-gray-500 font-bold uppercase tracking-widest">Loading Collection...</p>
-            </div>
-        );
-    }
-
-    return (
-        <div className="min-h-screen bg-white pt-24 pb-20">
-            <div className="container mx-auto px-4 lg:px-8">
-                {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 border-b pb-8">
-                    <div className="flex-1">
-                        <button
-                            onClick={() => window.location.hash = "#our-work"}
-                            className="group flex items-center gap-2 text-primary font-black mb-4 hover:translate-x-[-4px] transition-transform uppercase text-xs tracking-[0.2em]"
-                        >
-                            <ArrowLeft size={16} strokeWidth={3} /> Back to Gallery
-                        </button>
-                        <h1 className="text-5xl md:text-7xl font-serif font-black text-black mb-4 uppercase leading-none">{categoryDetail?.name}</h1>
-                        <p className="text-gray-600 text-lg max-w-2xl italic leading-relaxed">
-                            "{categoryDetail?.description}"
-                        </p>
-                    </div>
-                    <div className="bg-primary/5 px-8 py-6 rounded-[2rem] border border-primary/10 text-center min-w-[160px]">
-                        <span className="block text-4xl font-black text-primary leading-none mb-1">{images.length}</span>
-                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Unique Styles</span>
-                    </div>
-                </div>
-
-                {/* Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-                    <AnimatePresence>
-                        {images.map((image, index) => (
-                            <motion.div
-                                key={image.id}
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ delay: index * 0.05 }}
-                                className="group relative aspect-[4/5] rounded-[2.5rem] overflow-hidden shadow-2xl transition-all cursor-pointer"
-                                onClick={() => {
-                                    setLightboxIndex(index);
-                                    setIsZoomed(false);
-                                    setLightboxOpen(true);
-                                }}
-                            >
-                                <img
-                                    src={image.src}
-                                    alt={image.title}
-                                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
-                                />
-
-                                {/* Overlay - Optimized for Touch & Desktop */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent lg:opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-end p-8">
-                                    <div className="flex items-center gap-2 mb-3">
-                                        <div className="h-[2px] w-8 bg-primary"></div>
-                                        <p className="text-primary text-[10px] font-black uppercase tracking-[0.2em]">DESIGN #{index + 1}</p>
-                                    </div>
-                                    <h3 className="text-white text-2xl font-serif font-bold mb-6 leading-tight">{image.title}</h3>
-                                    <button
-                                        onClick={(e) => addToCart(e, image)}
-                                        className="w-full py-4 bg-white text-black rounded-2xl font-black text-[10px] tracking-[0.2em] flex items-center justify-center gap-2 hover:bg-primary hover:text-white transition-all active:scale-95 shadow-xl"
-                                    >
-                                        <ShoppingCart size={16} /> ADD TO ORDER
-                                    </button>
-                                </div>
-
-                                {/* Info Chip */}
-                                <div className="absolute top-6 right-6 bg-white/95 backdrop-blur-xl px-4 py-2 rounded-full shadow-lg">
-                                    <span className="text-[9px] font-black text-black tracking-widest uppercase">ENLARGE</span>
-                                </div>
-                            </motion.div>
-                        ))}
-                    </AnimatePresence>
-                </div>
-
-                {images.length === 0 && (
-                    <div className="text-center py-32 border-4 border-dashed rounded-[3rem] bg-gray-50/50">
-                        <ImageIcon size={80} className="mx-auto text-gray-200 mb-6" strokeWidth={1} />
-                        <h3 className="text-2xl font-serif font-black text-gray-900 mb-2 uppercase">Collection Coming Soon</h3>
-                        <p className="text-gray-400 font-medium">We are currently curating our latest masterpieces.</p>
-                    </div>
-                )}
-            </div>
-
-            {lightboxOpen && images[lightboxIndex] && (
-                <div className="fixed inset-0 z-[200] bg-black text-white" role="dialog" aria-modal="true" aria-label={`${images[lightboxIndex].title || "Design"} full screen view`}>
-                    <div className="absolute inset-0 overflow-auto flex items-center justify-center" onClick={() => setLightboxOpen(false)}>
-                        <img
-                            src={images[lightboxIndex].src}
-                            alt={images[lightboxIndex].title || "Clothing design"}
-                            className={isZoomed ? "block max-w-none w-[150vw] h-[150dvh] object-contain m-auto cursor-zoom-out" : "block w-full h-full object-contain cursor-zoom-in"}
-                            onClick={(event) => { event.stopPropagation(); setIsZoomed(value => !value); }}
-                        />
-                    </div>
-                    <div className="absolute top-0 inset-x-0 flex items-start justify-between gap-4 p-4 md:p-6 bg-gradient-to-b from-black/80 to-transparent pointer-events-none">
-                        <div className="min-w-0 pt-2">
-                            <p className="text-sm md:text-lg font-bold truncate">{images[lightboxIndex].title}</p>
-                            <p className="text-xs text-white/75">{lightboxIndex + 1} of {images.length}</p>
-                        </div>
-                        <button type="button" onClick={() => setLightboxOpen(false)} aria-label="Close full screen image" className="pointer-events-auto shrink-0 p-3 rounded-full bg-black/70 hover:bg-black"><X size={24} /></button>
-                    </div>
-                    <div className="absolute bottom-0 inset-x-0 flex items-center justify-center gap-4 p-4 md:p-6 bg-gradient-to-t from-black/80 to-transparent pointer-events-none">
-                        {images.length > 1 && <button type="button" onClick={() => { setLightboxIndex(index => (index - 1 + images.length) % images.length); setIsZoomed(false); }} aria-label="Previous design" className="pointer-events-auto p-3 rounded-full bg-black/70 hover:bg-black"><ChevronLeft size={24} /></button>}
-                        <button type="button" onClick={() => setIsZoomed(value => !value)} aria-label={isZoomed ? "Zoom out" : "Zoom in"} className="pointer-events-auto p-3 rounded-full bg-black/70 hover:bg-black">{isZoomed ? <ZoomOut size={24} /> : <ZoomIn size={24} />}</button>
-                        {images.length > 1 && <button type="button" onClick={() => { setLightboxIndex(index => (index + 1) % images.length); setIsZoomed(false); }} aria-label="Next design" className="pointer-events-auto p-3 rounded-full bg-black/70 hover:bg-black"><ChevronRight size={24} /></button>}
-                    </div>
-                </div>
-            )}
+  return (
+    <section className="section-space min-h-[70vh]">
+      <div className="site-container">
+        <a href="#our-work" className="text-link mb-10"><ArrowLeft size={15} /> Back to collections</a>
+        <div className="mb-12 flex flex-col justify-between gap-6 border-b border-[#ded5c7] pb-10 md:flex-row md:items-end">
+          <div><span className="eyebrow">The Manaf collection</span><h1 className="section-heading mb-5">{category?.name || fashionCopy(categoryId.replace(/-/g, " "))}</h1><p className="max-w-lg text-sm leading-[1.9] text-[#7b7265]">{category?.description || "Discover personal style, thoughtfully designed."}</p></div>
+          <a href="#contact" className="text-link self-start">Ask your fashion designer <ArrowUpRight size={16} /></a>
         </div>
-    );
-};
-
-export default CategoryGallery;
+        <div className="grid gap-x-7 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+          {images.map((image, index) => <article key={image.id} className="group">
+            <button type="button" onClick={() => setLightboxIndex(index)} aria-label={`Enlarge ${image.title}`} className="relative block w-full overflow-hidden bg-[#e9e3d9]">
+              <img src={image.src} alt={image.title} loading={index < 3 ? "eager" : "lazy"} className="aspect-[4/5] w-full object-cover object-top transition-transform duration-700 group-hover:scale-[1.03]" />
+              <span className="absolute right-4 top-4 rounded-full bg-white/95 p-3"><ZoomIn size={17} strokeWidth={1.5} /></span>
+            </button>
+            <div className="mt-5 flex items-start justify-between gap-4"><div><p className="mb-2 text-[9px] uppercase tracking-[0.15em] text-primary">{category.name}</p><h2 className="font-serif text-xl font-normal">{image.title}</h2></div><button type="button" onClick={() => select(image)} aria-label={`Add ${image.title} to your selection`} className="shrink-0 border border-[#d8cfc1] p-3 transition-colors hover:bg-[#eee8dd]">{added.includes(image.id) ? <Check size={18} className="text-primary" /> : <ShoppingBag size={18} strokeWidth={1.5} />}</button></div>
+            {added.includes(image.id) && <p role="status" className="mt-2 text-[11px] text-primary">Added to your selection.</p>}
+          </article>)}
+        </div>
+        {!images.length && <div className="border border-[#e2dbcf] bg-[#f2eee6] px-6 py-16 text-center"><h2 className="mb-4 text-3xl">Let's find your next look.</h2><p className="mx-auto mb-7 max-w-md text-sm leading-relaxed text-[#7b7265]">Speak with your fashion designer to explore this collection and discuss a piece made for you.</p><a href="#contact" className="button-primary">Discuss a design <ArrowUpRight size={16} /></a></div>}
+        <div className="mt-12 border-t border-[#e2dbcf] pt-7"><p className="text-xs leading-[1.9] text-[#7b7265]">Select a design to start your order, or contact us to discuss fabric, fit, and availability. Final details are confirmed with your fashion designer.</p></div>
+      </div>
+      <Lightbox open={lightboxIndex >= 0} close={() => setLightboxIndex(-1)} index={Math.max(0, lightboxIndex)} slides={images.map(image => ({ src: image.src, alt: image.title }))} plugins={[Zoom]} carousel={{ finite: images.length === 1 }} />
+    </section>
+  );
+}

@@ -1,185 +1,38 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { ArrowUpRight, Check, ShoppingBag, ZoomIn } from "lucide-react";
 import Lightbox from "yet-another-react-lightbox";
+import Zoom from "yet-another-react-lightbox/plugins/zoom";
 import "yet-another-react-lightbox/styles.css";
-import { ShoppingCart } from "lucide-react";
+import { studioCollections } from "../../data/collections";
+import { addSelection } from "../../lib/cart";
 
-// Import existing images
-import img1 from "../../assets/Y.jpeg";
-import img2 from "../../assets/ye.jpeg";
-import img3 from "../../assets/family.jpeg";
-import img4 from "../../assets/wh.jpeg";
-import img5 from "../../assets/bl.jpeg";
-import img6 from "../../assets/sh.jpeg";
+const looks = studioCollections.flatMap(category => category.images.filter(image => image.id !== "family-print").map(image => ({ ...image, category: category.name })));
+const filters = ["All looks", "Vintage Tops", "Kaftan For Men", "3-In-1 For Men", "Kids"];
 
-const Gallery = () => {
-  const [filter, setFilter] = useState("all");
-  const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [lightboxIndex, setLightboxIndex] = useState(0);
-
-  const categories = ["all", "suits", "dresses", "alterations", "shirts"];
-
-  const galleryItems = [
-    { id: 1, image: img1, category: "suits", title: "Custom Suit Fitting" },
-    {
-      id: 2,
-      image: img2,
-      category: "alterations",
-      title: "Precision Alterations",
-    },
-    { id: 3, image: img3, category: "dresses", title: "family photoshoot" },
-    { id: 4, image: img4, category: "suits", title: "Tailoring Workshop" },
-    { id: 5, image: img5, category: "suits", title: "Suit Details" },
-    { id: 6, image: img6, category: "shirts", title: "Custom Shirt" },
-    { id: 7, image: img1, category: "alterations", title: "Expert Tailoring" },
-    { id: 8, image: img4, category: "dresses", title: "Wedding Gown" },
-  ];
-
-  const filteredItems =
-    filter === "all"
-      ? galleryItems
-      : galleryItems.filter((item) => item.category === filter);
-
-  const lightboxSlides = filteredItems.map((item) => ({ src: item.image }));
-
-  const openLightbox = (index) => {
-    setLightboxIndex(index);
-    setLightboxOpen(true);
+export default function Gallery() {
+  const [filter, setFilter] = useState("All looks");
+  const [index, setIndex] = useState(-1);
+  const [added, setAdded] = useState([]);
+  const visible = filter === "All looks" ? looks : looks.filter(image => image.category === filter);
+  const select = image => {
+    addSelection(image, image.category);
+    setAdded(current => [...current, image.id]);
   };
-
-  const addToCart = (e, item) => {
-    e.stopPropagation();
-    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-    const cartItem = {
-      id: `gallery-${item.id}`,
-      title: item.title,
-      image: item.image,
-      category: item.category,
-      quantity: 1,
-    };
-    
-    // Check if item already exists
-    const existingItem = cart.find((i) => i.id === cartItem.id);
-    if (existingItem) {
-      // If exists, increase quantity
-      existingItem.quantity = (existingItem.quantity || 1) + 1;
-    } else {
-      cart.push(cartItem);
-    }
-    localStorage.setItem("cart", JSON.stringify(cart));
-    window.dispatchEvent(new Event("cart-updated"));
-    
-    // Show feedback
-    const button = e.currentTarget;
-    const originalHTML = button.innerHTML;
-    button.innerHTML = '<span class="text-green-500">✓ Added</span>';
-    setTimeout(() => {
-      button.innerHTML = originalHTML;
-    }, 2000);
-  };
-
   return (
-    <section className="py-20 bg-gray-50">
-      <div className="container mx-auto px-4 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-12"
-        >
-          <h2 className="text-4xl lg:text-5xl font-serif font-bold text-black mb-4">
-            Portfolio Gallery
-          </h2>
-          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-            Browse through our collection of beautifully crafted garments and see the quality of our work
-          </p>
-        </motion.div>
-
-        {/* Filter Buttons */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="flex flex-wrap justify-center gap-4 mb-12"
-        >
-          {categories.map((category) => (
-            <motion.button
-              key={category}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setFilter(category)}
-              className={`px-6 py-2 rounded-full font-semibold transition-all duration-300 ${
-                filter === category
-                  ? "bg-primary text-white shadow-lg"
-                  : "bg-white text-gray-700 hover:bg-gray-100"
-              }`}
-            >
-              {category.charAt(0).toUpperCase() + category.slice(1)}
-            </motion.button>
-          ))}
-        </motion.div>
-
-        {/* Gallery Grid */}
-        <motion.div
-          layout
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-        >
-          <AnimatePresence>
-            {filteredItems.map((item, index) => (
-              <motion.div
-                key={item.id}
-                layout
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.4 }}
-                whileHover={{ y: -10 }}
-                className="group relative overflow-hidden rounded-lg shadow-lg cursor-pointer"
-                onClick={() => openLightbox(index)}
-              >
-                <div className="relative h-80 overflow-hidden">
-                  <motion.img
-                    whileHover={{ scale: 1.1 }}
-                    transition={{ duration: 0.4 }}
-                    src={item.image}
-                    alt={item.title}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                  {/* Title and Add to Cart on hover */}
-                  <div className="absolute bottom-0 left-0 right-0 p-4 text-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                    <h3 className="text-lg font-serif font-bold mb-2">
-                      {item.title}
-                    </h3>
-                    <motion.button
-                      onClick={(e) => addToCart(e, item)}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary/90 transition-colors"
-                    >
-                      <ShoppingCart size={18} />
-                      Add to Cart
-                    </motion.button>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </motion.div>
+    <section id="lookbook" className="section-space">
+      <div className="site-container">
+        <div className="mb-10 flex flex-col justify-between gap-6 md:flex-row md:items-end"><div><span className="eyebrow">The lookbook</span><h2 className="section-heading">Style in <span className="italic text-primary">real life.</span></h2></div><p className="max-w-[300px] text-sm leading-[1.9] text-[#7b7265]">A closer look at our design language. Find your inspiration, then make it yours.</p></div>
+        <div className="mb-8 flex flex-wrap gap-2" aria-label="Filter the lookbook">{filters.map(name => <button key={name} type="button" onClick={() => { setFilter(name); setIndex(-1); }} aria-pressed={filter === name} className={`min-h-11 border px-4 py-3 text-[10px] tracking-wide transition-colors ${filter === name ? "border-[#29251f] bg-[#29251f] text-white" : "border-[#ded5c7] text-[#756c60] hover:border-primary"}`}>{name === "Kaftan For Men" ? "Kaftans" : name === "3-In-1 For Men" ? "Occasion wear" : name}</button>)}</div>
+        <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:gap-x-6 sm:gap-y-9 lg:grid-cols-3">
+          {visible.map((image, imageIndex) => <article key={image.id} className="group">
+            <button type="button" aria-label={`Enlarge ${image.title}`} onClick={() => setIndex(imageIndex)} className="relative block w-full overflow-hidden bg-[#e9e3d9]"><img src={image.src} alt={image.title} loading="lazy" className="aspect-[4/5] w-full object-cover object-top transition-transform duration-700 group-hover:scale-[1.03]" /><span className="absolute bottom-4 right-4 flex h-9 w-9 items-center justify-center rounded-full bg-white/95"><ZoomIn size={16} strokeWidth={1.5} /></span></button>
+            <div className="mt-4 flex items-start justify-between gap-3"><div><p className="mb-2 text-[9px] uppercase tracking-[0.16em] text-primary">{image.category}</p><h3 className="text-lg font-normal sm:text-xl">{image.title}</h3></div><button type="button" onClick={() => select(image)} aria-label={`Add ${image.title} to your selection`} className="shrink-0 p-3 transition-colors hover:bg-[#eee8dd]">{added.includes(image.id) ? <Check size={18} className="text-primary" /> : <ShoppingBag size={18} strokeWidth={1.5} />}</button></div>
+            {added.includes(image.id) && <span role="status" className="mt-2 block text-[11px] text-primary">Added to your selection.</span>}
+          </article>)}
+        </div>
+        <div className="mt-12 text-center"><a href="#our-work" className="text-link">Explore all collections <ArrowUpRight size={16} /></a></div>
       </div>
-
-      {/* Lightbox */}
-      <Lightbox
-        open={lightboxOpen}
-        close={() => setLightboxOpen(false)}
-        slides={lightboxSlides}
-        index={lightboxIndex}
-      />
+      <Lightbox open={index >= 0} close={() => setIndex(-1)} index={Math.max(0, index)} slides={visible.map(image => ({ src: image.src, alt: image.title }))} plugins={[Zoom]} carousel={{ finite: visible.length === 1 }} />
     </section>
   );
-};
-
-export default Gallery;
+}

@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ShoppingCart, Trash2, MessageCircle, CheckCircle, Copy, ExternalLink, Plus, Minus } from "lucide-react";
+import { X, ShoppingCart, Trash2, MessageCircle, CheckCircle, Plus, Minus } from "lucide-react";
 import { db } from "../firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { readCart } from "../lib/cart";
 
 const Cart = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -10,11 +11,12 @@ const Cart = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [generatedId, setGeneratedId] = useState("");
+  const dialogRef = useRef(null);
 
   // Order Details
   const [customerName, setCustomerName] = useState("");
   const [customerContact, setCustomerContact] = useState("");
-  const [measurementsMode, setMeasurementsMode] = useState("visit-tailor");
+  const [measurementsMode, setMeasurementsMode] = useState("visit-designer");
   const [measurements, setMeasurements] = useState({
     chest: "",
     waist: "",
@@ -27,7 +29,7 @@ const Cart = () => {
 
   useEffect(() => {
     const handleCartUpdate = () => {
-      const items = JSON.parse(localStorage.getItem("cart") || "[]");
+      const items = readCart();
       // Ensure all items have quantity
       const itemsWithQuantity = items.map(item => ({
         ...item,
@@ -55,14 +57,27 @@ const Cart = () => {
 
   // Manage body scroll when cart is open
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-
+    if (!isOpen) return;
+    const previousFocus = document.activeElement;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const frame = requestAnimationFrame(() => dialogRef.current?.querySelector('button')?.focus());
+    const onKey = event => {
+      if (event.key === 'Escape') setIsOpen(false);
+      if (event.key !== 'Tab') return;
+      const elements = dialogRef.current?.querySelectorAll('button:not(:disabled), input, textarea, a[href]');
+      if (!elements?.length) return;
+      const first = elements[0];
+      const last = elements[elements.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    window.addEventListener('keydown', onKey);
     return () => {
-      document.body.style.overflow = '';
+      cancelAnimationFrame(frame);
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', onKey);
+      previousFocus?.focus();
     };
   }, [isOpen]);
 
@@ -90,7 +105,7 @@ const Cart = () => {
   const updateQuantity = (id, change) => {
     const items = cartItems.map((item) => {
       if (item.id === id) {
-        const newQuantity = Math.max(1, (item.quantity || 1) + change);
+        const newQuantity = Math.min(99, Math.max(1, (item.quantity || 1) + change));
         return { ...item, quantity: newQuantity };
       }
       return item;
@@ -131,7 +146,8 @@ const Cart = () => {
         name: customerName.trim(),
         contact: customerContact.trim(),
       },
-      measurementsMode,
+      // Preserve the existing order schema while using the updated studio wording.
+      measurementsMode: measurementsMode === "visit-designer" ? "visit-tailor" : measurementsMode,
       measurements: measurementsMode === "enter-yourself" ? measurements : {},
       colorChoice: {
         mode: colorMode,
@@ -182,19 +198,24 @@ const Cart = () => {
           onClick={() => setIsOpen(false)}
         >
           <motion.div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="selection-title"
             initial={{ y: "100%", opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: "100%", opacity: 0 }}
-            className="bg-white w-full md:w-[500px] h-[90vh] md:h-auto max-h-[90vh] rounded-t-[2.5rem] md:rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden"
+            className="bg-white w-full md:w-[500px] h-[90vh] md:h-auto max-h-[90vh] rounded-t-xl md:rounded-xl shadow-2xl flex flex-col overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-8 border-b">
-              <h2 className="text-2xl font-serif font-black text-black flex items-center gap-3">
+            <div className="flex items-center justify-between p-6 border-b">
+              <h2 id="selection-title" className="text-2xl font-serif font-normal text-black flex items-center gap-3">
                 <ShoppingCart className="text-primary" size={28} />
                 {isSuccess ? "Order Success" : "Your Selection"}
               </h2>
               <button
+                aria-label="Close your selection"
                 onClick={() => setIsOpen(false)}
                 className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:text-black transition-all"
               >
@@ -202,7 +223,7 @@ const Cart = () => {
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
               {isSuccess ? (
                 /* Success View */
                 <motion.div
@@ -229,7 +250,7 @@ const Cart = () => {
                       <MessageCircle size={24} /> SEND TO WHATSAPP
                     </button>
                     <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-relaxed">
-                      Click the button above to send your order number <br /> directly to our master tailor.
+                      Send your order number directly to your fashion designer to confirm the details.
                     </p>
                   </div>
                 </motion.div>
@@ -242,6 +263,8 @@ const Cart = () => {
                         <ShoppingCart size={32} className="text-gray-300" />
                       </div>
                       <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">Nothing selected yet</p>
+                      <p className="mt-4 text-sm leading-relaxed text-gray-500">Find a look you love in our collections, then add it to your selection.</p>
+                      <a href="#our-work" onClick={() => setIsOpen(false)} className="button-primary mt-6">Explore collections</a>
                     </div>
                   ) : (
                     <div className="space-y-6">
@@ -250,12 +273,17 @@ const Cart = () => {
                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Your Details</p>
                         <div className="space-y-3">
                           <input
+                            aria-label="Your full name"
+                            autoComplete="name"
                             value={customerName}
                             onChange={(e) => setCustomerName(e.target.value)}
                             placeholder="Your full name"
                             className="w-full p-4 bg-white border border-gray-100 rounded-2xl text-sm font-bold"
                           />
                           <input
+                            aria-label="Phone or WhatsApp number"
+                            type="tel"
+                            autoComplete="tel"
                             value={customerContact}
                             onChange={(e) => setCustomerContact(e.target.value)}
                             placeholder="Phone / WhatsApp number"
@@ -276,6 +304,8 @@ const Cart = () => {
                               {/* Quantity Controls */}
                               <div className="flex items-center gap-3 mt-3">
                                 <button
+                                  aria-label={`Decrease quantity for ${item.title}`}
+                                  disabled={item.quantity <= 1}
                                   onClick={() => updateQuantity(item.id, -1)}
                                   className="w-8 h-8 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:text-black hover:border-black transition-all"
                                 >
@@ -285,6 +315,8 @@ const Cart = () => {
                                   {item.quantity || 1}
                                 </span>
                                 <button
+                                  aria-label={`Increase quantity for ${item.title}`}
+                                  disabled={item.quantity >= 99}
                                   onClick={() => updateQuantity(item.id, 1)}
                                   className="w-8 h-8 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:text-black hover:border-black transition-all"
                                 >
@@ -293,8 +325,9 @@ const Cart = () => {
                               </div>
                             </div>
                             <button
+                              aria-label={`Remove ${item.title} from your selection`}
                               onClick={() => removeFromCart(item.id)}
-                              className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center text-red-400 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100"
+                              className="w-8 h-8 shrink-0 rounded-full bg-white shadow-sm flex items-center justify-center text-red-400 hover:text-red-500 transition-all"
                             >
                               <Trash2 size={16} />
                             </button>
@@ -309,10 +342,10 @@ const Cart = () => {
                           <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Measurements</p>
                           <div className="grid grid-cols-2 gap-2">
                             <button
-                              onClick={() => setMeasurementsMode("visit-tailor")}
-                              className={`py-3 px-4 rounded-xl text-xs font-bold border transition-all ${measurementsMode === "visit-tailor" ? "bg-black text-white border-black" : "bg-white text-gray-500 border-gray-200"}`}
+                              onClick={() => setMeasurementsMode("visit-designer")}
+                              className={`py-3 px-4 rounded-xl text-xs font-bold border transition-all ${measurementsMode === "visit-designer" ? "bg-black text-white border-black" : "bg-white text-gray-500 border-gray-200"}`}
                             >
-                              Visit Tailor
+                              Visit fashion designer
                             </button>
                             <button
                               onClick={() => setMeasurementsMode("enter-yourself")}
@@ -326,6 +359,7 @@ const Cart = () => {
                               {["chest", "waist", "hips", "length"].map(f => (
                                 <input
                                   key={f}
+                                  aria-label={`${f} measurement`}
                                   placeholder={f.charAt(0).toUpperCase() + f.slice(1)}
                                   value={measurements[f]}
                                   onChange={e => setMeasurements({ ...measurements, [f]: e.target.value })}
@@ -340,6 +374,7 @@ const Cart = () => {
                         <div>
                           <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Special Requests</p>
                           <textarea
+                            aria-label="Special requests"
                             value={notes}
                             onChange={e => setNotes(e.target.value)}
                             placeholder="Anything else we should know?"
@@ -355,7 +390,7 @@ const Cart = () => {
 
             {/* Sticky Actions */}
             {!isSuccess && cartItems.length > 0 && (
-              <div className="p-8 border-t bg-white">
+              <div className="p-6 border-t bg-white">
                 <button
                   onClick={handleCreateOrder}
                   disabled={isSubmitting}

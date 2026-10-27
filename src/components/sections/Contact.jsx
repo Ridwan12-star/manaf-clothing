@@ -1,111 +1,35 @@
-import { motion } from 'framer-motion';
-import { MapPin, Phone, Mail, Clock } from 'lucide-react';
+import { useState } from "react";
+import { ArrowUpRight, MapPin, Phone, MessageCircle } from "lucide-react";
 
-const Contact = () => {
+export default function Contact() {
+  const [name, setName] = useState("");
+  const [message, setMessage] = useState("");
+  const enquiry = `Hello Manaf Clothing, my name is ${name.trim()}.\n\n${message.trim()}`;
+  const sendEnquiry = event => {
+    event.preventDefault();
+    window.open(`https://wa.me/233249494505?text=${encodeURIComponent(enquiry)}`, "_blank", "noopener,noreferrer");
+  };
   return (
-    <section id="contact" className="py-20 bg-gray-50">
-      <div className="container mx-auto px-4 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
-          <h2 className="text-4xl lg:text-5xl font-serif font-bold text-black mb-4">
-            Get In Touch
-          </h2>
-          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-            Visit us or reach out to schedule your consultation
-          </p>
-        </motion.div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Contact Information */}
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="space-y-8"
-          >            
-          </motion.div>
-
-          {/* Contact Form */}
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="bg-white p-8 rounded-lg shadow-lg"
-          >
-            <form className="space-y-6">
-              <div>
-                <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-2">
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                  placeholder="John Doe"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                  placeholder="john@example.com"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="phone" className="block text-sm font-semibold text-gray-700 mb-2">
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  id="phone"
-                  name="phone"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                  placeholder="+1 (555) 123-4567"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="message" className="block text-sm font-semibold text-gray-700 mb-2">
-                  Message
-                </label>
-                <textarea
-                  id="message"
-                  name="message"
-                  rows="4"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all resize-none"
-                  placeholder="Tell us about your tailoring needs..."
-                ></textarea>
-              </div>
-
-              <motion.button
-                type="submit"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full bg-primary text-white px-8 py-4 rounded-md font-semibold text-lg hover:bg-primary/90 transition-all duration-300 shadow-lg"
-              >
-                Send Message
-              </motion.button>
-            </form>
-          </motion.div>
+    <section id="contact" className="section-space bg-[#29251f] text-[#faf8f4]">
+      <div className="site-container grid gap-14 lg:grid-cols-2 lg:gap-24">
+        <div>
+          <span className="eyebrow !text-[#c6aa7f]">Your next look starts here</span>
+          <h2 className="section-heading">A little inspiration.<br /><span className="italic text-[#c6aa7f]">Endless possibility.</span></h2>
+          <p className="mb-9 mt-6 max-w-sm text-sm leading-[1.9] text-[#c2b9ac]">Have an occasion, an idea, or a piece you love? Let's talk about bringing your vision to life with your fashion designer.</p>
+          <div className="space-y-5 text-xs text-[#d6cec1]">
+            <p className="flex items-center gap-3"><MapPin size={18} strokeWidth={1.4} className="text-[#c6aa7f]" /> Koforidua, Eastern Region, Ghana</p>
+            <a href="tel:+233249494505" className="flex items-center gap-3 hover:text-white"><Phone size={18} strokeWidth={1.4} className="text-[#c6aa7f]" /> +233 24 949 4505 <ArrowUpRight size={13} /></a>
+            <a href="https://wa.me/233249494505" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 hover:text-white"><MessageCircle size={18} strokeWidth={1.4} className="text-[#c6aa7f]" /> Prefer to chat? Find us on WhatsApp <ArrowUpRight size={13} /></a>
+          </div>
         </div>
+        <form onSubmit={sendEnquiry} className="self-center border border-[#5e5548] p-6 sm:p-9">
+          <p className="mb-7 font-serif text-2xl">Tell us what you're imagining.</p>
+          <div className="mb-6"><label htmlFor="enquiry-name" className="mb-3 block text-[10px] uppercase tracking-[0.15em] text-[#c6bfb3]">Your name</label><input id="enquiry-name" name="name" autoComplete="name" required maxLength={100} value={name} onChange={event => setName(event.target.value)} placeholder="How should we address you?" className="w-full border-b border-[#6f6659] bg-transparent pb-3 text-sm text-white placeholder:text-[#a3998a] focus:border-[#c6aa7f] focus:outline-none" /></div>
+          <div className="mb-7"><label htmlFor="enquiry-message" className="mb-3 block text-[10px] uppercase tracking-[0.15em] text-[#c6bfb3]">Your idea</label><textarea id="enquiry-message" name="message" required maxLength={2000} rows={3} value={message} onChange={event => setMessage(event.target.value)} placeholder="A vintage top, a celebration outfit, or something uniquely you…" className="w-full resize-y border-b border-[#6f6659] bg-transparent pb-3 text-sm leading-relaxed text-white placeholder:text-[#a3998a] focus:border-[#c6aa7f] focus:outline-none" /></div>
+          <button type="submit" className="flex min-h-12 w-full items-center justify-between gap-4 bg-[#c6aa7f] px-5 py-4 text-[10px] font-semibold uppercase tracking-[0.15em] text-[#29251f] transition-colors hover:bg-[#dcc7a5]">Let's talk on WhatsApp <ArrowUpRight size={18} /></button>
+          <p className="mt-4 text-[10px] leading-relaxed text-[#b4aa9a]">Opens WhatsApp with your enquiry ready to send.</p>
+        </form>
       </div>
     </section>
   );
-};
-
-export default Contact;
+}

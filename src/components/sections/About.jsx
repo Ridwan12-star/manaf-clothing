@@ -1,96 +1,33 @@
-import { motion } from "framer-motion";
-import aboutImage from "../../assets/manaf.WEBP";
+import { ArrowUpRight } from "lucide-react";
+import portrait from "../../assets/manaff.jpeg";
+import detail from "../../assets/Y.jpeg";
 
-const About = () => {
+export default function About() {
   return (
-    <section id="about" className="py-20 bg-gray-50">
-      <div className="container mx-auto px-4 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          {/* Image Column - Desktop: Left with overlap effect */}
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="relative order-2 lg:order-1"
-          >
-            <div className="relative lg:pr-12">
-              <motion.img
-                whileHover={{ scale: 1.02 }}
-                transition={{ duration: 0.3 }}
-                src={aboutImage}
-                alt="Manaf workspace"
-                className="rounded-lg shadow-2xl w-full h-[500px] object-cover object-top relative z-10"
-              />
-              {/* Decorative element */}
-              <div className="hidden lg:block absolute -bottom-6 -right-6 w-full h-full bg-primary/20 rounded-lg -z-0" />
-            </div>
-          </motion.div>
-
-          {/* Content Column - Desktop: Right with background */}
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="order-1 lg:order-2"
-          >
-            <div className="bg-white lg:bg-secondary p-8 lg:p-12 rounded-lg lg:-ml-12 relative z-20">
-              <motion.h2
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                className="text-4xl lg:text-5xl font-serif font-bold text-black mb-6"
-              >
-                About Manaf Clothing
-              </motion.h2>
-
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-                className="space-y-4 text-gray-700 leading-relaxed"
-              >
-                <p>
-                  For over a decade, Manaf has been at the forefront of
-                  bespoke tailoring, combining traditional craftsmanship with
-                  contemporary design sensibilities.
-                </p>
-                <p>
-                  Our master tailors bring years of experience and passion to
-                  every garment, ensuring that each piece is not just clothing,
-                  but a work of art tailored specifically to you.
-                </p>
-                <p>
-                  We believe that the perfect fit goes beyond measurements—it's
-                  about understanding your lifestyle, preferences, and the
-                  confidence that comes from wearing something made just for
-                  you.
-                </p>
-              </motion.div>
-
-              <motion.button
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.6 }}
-                whileHover={{
-                  scale: 1.05,
-                  boxShadow: "0 10px 30px rgba(156, 125, 109, 0.3)",
-                }}
-                whileTap={{ scale: 0.95 }}
-                className="mt-8 bg-primary text-white px-8 py-3 rounded-md font-semibold hover:bg-primary/90 transition-all duration-300 shadow-lg"
-              >
-                More About Us
-              </motion.button>
-            </div>
-          </motion.div>
+    <section id="about" className="section-space bg-[#eee8dd]">
+      <div className="site-container grid items-center gap-12 lg:grid-cols-2 lg:gap-24">
+        <div className="relative pb-10 pr-12 sm:pr-20">
+          <img src={portrait} alt="A sand-coloured kaftan with a detailed neckline" loading="lazy" width="736" height="920" className="aspect-[4/5] w-full object-cover object-top" />
+          <div className="absolute bottom-0 right-0 w-[42%] border-[7px] border-[#eee8dd] bg-[#e0d6c5]">
+            <img src={detail} alt="Expressive print from the Vintage Tops collection" loading="lazy" className="aspect-[3/4] w-full object-cover" />
+          </div>
+          <span className="absolute bottom-2 left-0 text-[9px] uppercase tracking-[0.2em] text-primary">The details make the difference.</span>
+        </div>
+        <div>
+          <span className="eyebrow">Our story / Manaf Clothing</span>
+          <h2 className="section-heading">More than clothing.<br /><span className="italic text-primary">An expression of you.</span></h2>
+          <div className="mt-7 space-y-4 text-sm leading-[1.95] text-[#756c60]">
+            <p>Based in Koforidua, Ghana, Manaf Clothing brings African heritage into a contemporary wardrobe. We create pieces with character, from expressive vintage tops to considered occasion wear.</p>
+            <p>Your fashion designer works with your ideas, your measurements, and the way you want to feel. Fabric, silhouette, and finishing come together to create something personal.</p>
+            <p>Because great style should feel as natural as being yourself.</p>
+          </div>
+          <div className="my-8 grid grid-cols-2 gap-6 border-y border-[#d9cfbf] py-6">
+            <div><p className="mb-2 font-serif text-xl">Rooted in Ghana</p><p className="text-[11px] leading-relaxed text-[#756c60]">A contemporary African perspective.</p></div>
+            <div><p className="mb-2 font-serif text-xl">Created for you</p><p className="text-[11px] leading-relaxed text-[#756c60]">Your vision, thoughtfully expressed.</p></div>
+          </div>
+          <a href="#contact" className="text-link">Let's create something personal <ArrowUpRight size={16} /></a>
         </div>
       </div>
     </section>
   );
-};
-
-export default About;
+}

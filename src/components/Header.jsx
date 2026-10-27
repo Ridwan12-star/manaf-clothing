@@ -1,161 +1,84 @@
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ShoppingCart } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Menu, X, ShoppingBag, ArrowUpRight } from "lucide-react";
 import logo from "../assets/logo.jpeg";
 
-const Header = () => {
+const links = [
+  { name: "Collections", href: "#our-work" },
+  { name: "Our story", href: "#about" },
+  { name: "The experience", href: "#services" },
+  { name: "Contact", href: "#contact" },
+];
+
+export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const menuButton = useRef(null);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    const onKey = (event) => {
+      if (event.key === "Escape") { setIsOpen(false); menuButton.current?.focus(); }
     };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const onRoute = () => setIsOpen(false);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("hashchange", onRoute);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("hashchange", onRoute);
+    };
   }, []);
 
-  const navLinks = [
-    { name: "Home", href: "#home" },
-    { name: "About", href: "#about" },
-    { name: "Services", href: "#services" },
-    { name: "Our Work", href: "#our-work" },
-    { name: "Contact", href: "#contact" },
-  ];
-
-  const scrollToSection = (e, href) => {
-    e.preventDefault();
-    const element = document.querySelector(href);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-      setIsOpen(false);
+  const navigate = (event, href) => {
+    setIsOpen(false);
+    const target = document.getElementById(href.slice(1));
+    if (target) {
+      event.preventDefault();
+      if (window.location.hash !== href) window.location.hash = href;
+      else target.scrollIntoView({ behavior: "auto" });
     }
   };
 
   return (
-    <motion.header
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.5 }}
-      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${scrolled ? "bg-white shadow-md" : "bg-white"
-        }`}
-    >
-      <nav className="container mx-auto px-4 lg:px-8 py-4">
-        <div className="flex items-center justify-between">
-          {/* Logo */}
-          <motion.a
-            href="#home"
-            onClick={(e) => scrollToSection(e, "#home")}
-            className="flex items-center gap-3"
-            whileHover={{ scale: 1.05 }}
-          >
-            <img
-              src={logo}
-              alt="Manaf Clothing Logo"
-              className="h-10 lg:h-12 w-auto object-contain"
-            />
-            <span
-              className="text-xl lg:text-2xl font-serif font-bold text-primary hidden sm:block cursor-default"
-              onDoubleClick={() => {
-                window.location.hash = "#admin";
-                window.location.reload();
-              }}
-              onClick={(e) => {
-                // Secret: 3 taps to enter admin via logo text
-                if (e.detail === 3) {
-                  window.location.hash = "#admin";
-                  window.location.reload();
-                }
-              }}
-            >
-              Manaf Clothing
+    <header className={`sticky top-0 z-40 border-b border-[#e4ded4] bg-[#faf8f4]/95 backdrop-blur-xl transition-shadow ${scrolled ? "shadow-sm" : ""}`}>
+      <div className="hidden border-b border-[#e4ded4] sm:block">
+        <div className="site-container flex h-8 items-center justify-between text-[9px] uppercase tracking-[0.18em] text-[#776c5c]">
+          <span>Fashion design from Koforidua, Ghana</span>
+          <span className="flex items-center gap-2"><span className="h-1 w-1 rounded-full bg-primary" /> Worldwide delivery available</span>
+        </div>
+      </div>
+      <nav aria-label="Main navigation" className="site-container">
+        <div className="flex h-[76px] items-center justify-between gap-4 lg:h-[84px]">
+          <a href="#home" onClick={(event) => navigate(event, "#home")} className="flex shrink-0 items-center gap-2 sm:gap-3" aria-label="Manaf Clothing home">
+            <img src={logo} alt="" width="70" height="43" className="h-9 w-14 bg-black object-contain sm:h-11 sm:w-[70px]" />
+            <span className="text-[17px] leading-none tracking-[-0.04em] sm:text-[23px]">
+              <span className="font-serif">Manaf Clothing</span>
+              <span className="mt-2 block text-[8px] font-medium uppercase tracking-[0.25em] text-primary">Fashion designer</span>
             </span>
-          </motion.a>
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            {navLinks.map((link) => (
-              <motion.a
-                key={link.name}
-                href={link.href}
-                onClick={(e) => scrollToSection(e, link.href)}
-                className="text-black hover:text-primary transition-colors duration-300 font-medium"
-                whileHover={{ y: -2 }}
-              >
-                {link.name}
-              </motion.a>
-            ))}
-            {/* Cart Icon */}
-            <motion.button
-              onClick={() => {
-                window.dispatchEvent(new Event('open-cart'));
-              }}
-              className="relative text-black hover:text-primary transition-colors duration-300"
-              whileHover={{ scale: 1.1 }}
-              aria-label="Shopping Cart"
-            >
-              <ShoppingCart size={24} />
-              <span id="cart-count" className="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center hidden">
-                0
-              </span>
-            </motion.button>
+          </a>
+          <div className="hidden items-center gap-7 lg:flex">
+            {links.map(link => <a key={link.href} href={link.href} onClick={event => navigate(event, link.href)} className="py-3 text-[11px] font-medium tracking-wide transition-colors hover:text-primary">{link.name}</a>)}
           </div>
-
-          {/* Mobile Menu Button & Cart */}
-          <div className="md:hidden flex items-center gap-4">
-            <motion.button
-              onClick={() => {
-                window.dispatchEvent(new Event('open-cart'));
-              }}
-              className="relative text-black hover:text-primary transition-colors"
-              whileHover={{ scale: 1.1 }}
-              aria-label="Shopping Cart"
-            >
-              <ShoppingCart size={24} />
-              <span id="cart-count-mobile" className="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center hidden">
-                0
-              </span>
-            </motion.button>
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="text-black hover:text-primary transition-colors"
-            >
-              {isOpen ? <X size={28} /> : <Menu size={28} />}
+          <div className="flex items-center gap-2 sm:gap-5">
+            <a href="#contact" onClick={event => navigate(event, "#contact")} className="hidden items-center gap-2 border-b border-primary/50 py-2 text-[10px] font-semibold uppercase tracking-[0.12em] xl:flex">Create your look <ArrowUpRight size={15} /></a>
+            <button type="button" onClick={() => window.dispatchEvent(new Event("open-cart"))} className="relative p-2" aria-label="Open your selection">
+              <ShoppingBag size={21} strokeWidth={1.5} />
+              <span id="cart-count" className="absolute -right-1 -top-1 flex hidden h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-[9px] text-white">0</span>
+            </button>
+            <button ref={menuButton} type="button" onClick={() => setIsOpen(!isOpen)} aria-expanded={isOpen} aria-controls="mobile-navigation" aria-label={isOpen ? "Close menu" : "Open menu"} className="p-2 lg:hidden">
+              {isOpen ? <X size={22} /> : <Menu size={22} />}
             </button>
           </div>
         </div>
-
-        {/* Mobile Navigation */}
-        <AnimatePresence>
-          {isOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
-              className="md:hidden overflow-hidden"
-            >
-              <div className="flex flex-col space-y-4 pt-4 pb-2">
-                {navLinks.map((link, index) => (
-                  <motion.a
-                    key={link.name}
-                    href={link.href}
-                    onClick={(e) => scrollToSection(e, link.href)}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="text-black hover:text-primary transition-colors duration-300 font-medium py-2"
-                  >
-                    {link.name}
-                  </motion.a>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {isOpen && (
+          <div id="mobile-navigation" className="border-t border-[#e4ded4] pb-6 pt-3 lg:hidden">
+            {links.map(link => <a key={link.href} href={link.href} onClick={event => navigate(event, link.href)} className="flex items-center justify-between border-b border-[#e4ded4]/60 py-4 text-sm">{link.name}<ArrowUpRight size={16} className="text-primary" /></a>)}
+            <a href="#contact" onClick={event => navigate(event, "#contact")} className="button-primary mt-5 w-full">Create your look <ArrowUpRight size={16} /></a>
+          </div>
+        )}
       </nav>
-    </motion.header>
+    </header>
   );
-};
-
-export default Header;
+}

@@ -6,6 +6,7 @@ import {
   serverTimestamp, updateDoc, doc, deleteDoc, orderBy, limit
 } from "firebase/firestore";
 import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from "firebase/auth";
+import { fashionCopy, measurementLabel } from "../lib/content";
 import {
   Image as ImageIcon, Search, Inbox, CheckCircle2,
   Loader2, LogOut, Lock, Settings, Plus, Trash2, Edit2, Clock, MapPin, Palette, FileText, AlertCircle, Menu, X, ChevronRight, Globe
@@ -84,7 +85,7 @@ const AdminDashboard = () => {
     try {
       const q = query(collection(db, "categories"), orderBy("name"));
       const snap = await getDocs(q);
-      const cats = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const cats = snap.docs.map(d => ({ id: d.id, ...d.data(), name: fashionCopy(d.data().name), description: fashionCopy(d.data().description || "") }));
       setCategories(cats);
 
       if (cats.length > 0 && !uploadCategory) {
@@ -622,7 +623,7 @@ const AdminDashboard = () => {
                               onClick={() => setSelectedImageIndex(i)}
                               className="aspect-square rounded-2xl border-2 border-gray-50 overflow-hidden shadow-sm hover:border-primary transition-all cursor-pointer group"
                             >
-                              <img src={item.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" alt={item.title || `Item ${i + 1}`} />
+                              <img src={item.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" alt={fashionCopy(item.title || `Item ${i + 1}`)} />
                             </button>
                           ))}
                         </div>
@@ -630,13 +631,13 @@ const AdminDashboard = () => {
                           <p className="text-[10px] font-black text-gray-400 uppercase mb-4">Requests</p>
                           <p className="text-xs font-bold text-black italic leading-relaxed">"{foundOrder.notes || 'None'}"</p>
                         </div>
-                        {/* Measurements (admin editable even if customer chose visit-tailor) */}
+                        {/* Measurements can also be entered during a studio visit. */}
                         <div className="bg-gray-50 p-8 rounded-2xl border border-gray-100">
                           <div className="flex items-center justify-between mb-4">
                             <div>
                               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Measurements</p>
                               <p className="text-[10px] font-bold text-gray-400 mt-1">
-                                Mode: <span className="font-black uppercase">{foundOrder.measurementsMode || "visit-tailor"}</span>
+                                Mode: <span className="font-black uppercase">{measurementLabel(foundOrder.measurementsMode)}</span>
                               </p>
                             </div>
                           </div>
@@ -707,7 +708,7 @@ const AdminDashboard = () => {
                   <div className="relative aspect-[4/5] max-h-[80vh] bg-black">
                     <img
                       src={foundOrder.items[selectedImageIndex].image}
-                      alt={foundOrder.items[selectedImageIndex].title || `Order Item ${selectedImageIndex + 1}`}
+                      alt={fashionCopy(foundOrder.items[selectedImageIndex].title || `Order Item ${selectedImageIndex + 1}`)}
                       className="w-full h-full object-contain"
                     />
                   </div>
@@ -716,10 +717,10 @@ const AdminDashboard = () => {
                     <div className="flex items-center justify-between mb-4">
                       <div>
                         <h3 className="text-2xl font-serif font-black text-black mb-1">
-                          {foundOrder.items[selectedImageIndex].title || `Item ${selectedImageIndex + 1}`}
+                          {fashionCopy(foundOrder.items[selectedImageIndex].title || `Item ${selectedImageIndex + 1}`)}
                         </h3>
                         <p className="text-sm text-gray-500 font-bold uppercase tracking-widest">
-                          {foundOrder.items[selectedImageIndex].category || 'Category'}
+                          {fashionCopy(foundOrder.items[selectedImageIndex].category || 'Category')}
                         </p>
                       </div>
                       <div className="text-right">

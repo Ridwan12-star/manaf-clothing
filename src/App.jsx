@@ -1,138 +1,71 @@
-import { useState, useEffect } from "react";
-import Preloader from "./components/Preloader";
+import { lazy, Suspense, useEffect, useState } from "react";
+import { MotionConfig } from "framer-motion";
 import Header from "./components/Header";
 import Hero from "./components/sections/Hero";
-import ServicesPreview from "./components/sections/ServicesPreview";
+import OurWork from "./components/sections/OurWork";
 import About from "./components/sections/About";
+import ServicesPreview from "./components/sections/ServicesPreview";
 import WhyChooseUs from "./components/sections/WhyChooseUs";
 import Gallery from "./components/sections/Gallery";
-import OurWork from "./components/sections/OurWork";
+import Contact from "./components/sections/Contact";
 import SocialMedia from "./components/sections/SocialMedia";
 import Footer from "./components/Footer";
 import WhatsAppFloat from "./components/WhatsappFloat";
 import Cart from "./components/Cart";
-import AdminDashboard from "./components/AdminDashboard";
 import CategoryGallery from "./components/CategoryGallery";
-function App() {
-  const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(() =>
-    window.location.hash === "#admin" || window.location.pathname === "/admin"
-  );
-  const [selectedCategory, setSelectedCategory] = useState(
-    window.location.hash.startsWith("#category/")
-      ? window.location.hash.split("/")[1]
-      : null
-  );
-  useEffect(() => {
-    // Clear any old persisted admin flag so browser visits don't get stuck in admin
-    try {
-      localStorage.removeItem("is_admin_mode");
-    } catch {}
-    const handleHashChange = () => {
-      const isCurrentlyAdmin =
-        window.location.hash === "#admin" ||
-        window.location.pathname === "/admin";
-      setIsAdmin(isCurrentlyAdmin);
-      if (window.location.hash.startsWith("#category/")) {
-        setSelectedCategory(window.location.hash.split("/")[1]);
-      } else {
-        setSelectedCategory(null);
-      }
-    };
-    window.addEventListener("hashchange", handleHashChange);
-    window.addEventListener("popstate", handleHashChange);
-    return () => {
-      window.removeEventListener("hashchange", handleHashChange);
-      window.removeEventListener("popstate", handleHashChange);
-    };
-  }, []);
-  const handleLoadingComplete = () => {
-    setTimeout(() => {
-      setLoading(false);
-      // Ensure body scrolling is enabled after preloader
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
-      document.body.style.height = '';
-    }, 500);
-  };
 
-  // Manage body scroll during preloader
+const AdminDashboard = lazy(() => import("./components/AdminDashboard"));
+
+function App() {
+  const [route, setRoute] = useState(window.location.hash);
+  const isAdmin = route === "#admin" || window.location.pathname === "/admin";
+  const selectedCategory = route.startsWith("#category/") ? route.slice(10) : null;
+
   useEffect(() => {
-    if (loading) {
-      document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.width = '100%';
-      document.body.style.height = '100%';
-    } else {
-      // Always ensure scroll is enabled when not loading
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
-      document.body.style.height = '';
-    }
-    
-    // Cleanup function to ensure scroll is always enabled
+    const updateRoute = () => setRoute(window.location.hash);
+    window.addEventListener("hashchange", updateRoute);
+    window.addEventListener("popstate", updateRoute);
     return () => {
-      if (!loading) {
-        document.body.style.overflow = '';
-        document.body.style.position = '';
-        document.body.style.width = '';
-        document.body.style.height = '';
-      }
+      window.removeEventListener("hashchange", updateRoute);
+      window.removeEventListener("popstate", updateRoute);
     };
-  }, [loading]);
-  
-  // Additional safety check - ensure scroll is enabled after component mounts
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (!loading) {
-        document.body.style.overflow = '';
-        document.body.style.position = '';
-        document.body.style.width = '';
-        document.body.style.height = '';
-      }
-    }, 100);
-    return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      if (selectedCategory || isAdmin) window.scrollTo({ top: 0, behavior: "instant" });
+      else if (route) document.getElementById(route.slice(1))?.scrollIntoView({ behavior: "auto" });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [route, selectedCategory, isAdmin]);
+
   return (
-    <>
-      {loading && <Preloader onLoadingComplete={handleLoadingComplete} />}
-      <div className={loading ? "hidden" : "block"}>
-        {isAdmin ? (
-          <main>
-            <AdminDashboard />
+    <MotionConfig reducedMotion="user">
+      {isAdmin ? <main><Suspense fallback={<div className="site-container py-28 text-sm text-primary" role="status">Opening the studio…</div>}><AdminDashboard /></Suspense></main> : (
+        <>
+          <a href="#main-content" className="skip-link">Skip to content</a>
+          <Header />
+          <main id="main-content">
+            {selectedCategory ? <CategoryGallery key={selectedCategory} categoryId={selectedCategory} /> : (
+              <>
+                <Hero />
+                <OurWork />
+                <About />
+                <ServicesPreview />
+                <WhyChooseUs />
+                <Gallery />
+                <Contact />
+                <SocialMedia />
+              </>
+            )}
           </main>
-        ) : selectedCategory ? (
-          <>
-            <Header />
-            <CategoryGallery categoryId={selectedCategory} />
-            <Footer />
-          </>
-        ) : (
-          <>
-            <Header />
-            <main>
-              <Hero />
-              <OurWork />
-              <ServicesPreview />
-              <About />
-              <WhyChooseUs />
-              <Gallery />
-              <SocialMedia />
-            </main>
-            <Footer />
-          </>
-        )}
-        {/* Shared UI (hidden in Admin mode) */}
-        {!isAdmin && (
-          <>
-            <WhatsAppFloat />
-            <Cart />
-          </>
-        )}
-      </div>
-    </>
+          <Footer />
+          <WhatsAppFloat />
+          <Cart />
+        </>
+      )}
+    </MotionConfig>
   );
 }
+
 export default App;

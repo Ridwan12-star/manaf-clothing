@@ -18,7 +18,7 @@ const Testimonials = () => {
     {
       id: 2,
       name: 'Michael Chen',
-      quote: 'I\'ve been getting my suits tailored at Manaf for years. The perfect fit and quality fabrics make all the difference. Highly recommend their custom tailoring service!',
+      quote: 'I\'ve been having my suits designed at Manaf for years. The perfect fit and quality fabrics make all the difference. Highly recommend their personal fashion design service!',
       image: 'https://ui-avatars.com/api/?name=Michael+Chen&background=9c7d6d&color=fff&size=200',
     },
     {
